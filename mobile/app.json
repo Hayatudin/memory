@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "Memory",
+    "slug": "memory",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#000000"
+  }
+}

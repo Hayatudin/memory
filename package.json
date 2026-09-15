@@ -1,0 +1,22 @@
+{
+  "name": "memory-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Production-ready cross-platform mobile app and backend for personal memory capture and retrieval",
+  "workspaces": [
+    "server",
+    "mobile"
+  ],
+  "scripts": {
+    "dev:server": "npm run dev --prefix server",
+    "dev:mobile": "npm run start --prefix mobile",
+    "dev:mobile:offline": "npm run start:offline --prefix mobile",
+    "build:server": "npm run build --prefix server",
+    "typecheck:server": "npm run typecheck --prefix server",
+    "typecheck:mobile": "npm run typecheck --prefix mobile",
+    "typecheck": "npm run typecheck:server && npm run typecheck:mobile"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+
+# Metro Bundler & React Native
+.metro-health-check*
+.expo/
+.bundle/
+
+# Native Android Build Output
+android/app/build/
+android/.gradle/
+android/build/
+android/.idea/
+android/*.iml
+
+# Native iOS Build Output
+ios/Pods/
+ios/build/
+ios/*.xcworkspace/xcuserdata/
+ios/*.xcodeproj/xcuserdata/
+
+# Logs
+*.log
+npm-debug.log*
