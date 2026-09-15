@@ -85,7 +85,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isSubmitting: true, error: null });
 
     // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 600));
+    await new Promise((resolve) => setTimeout(() => resolve(undefined), 600));
 
     const match = MOCK_USERS.find(
       (u) => u.email.toLowerCase() === payload.email.toLowerCase() && u.password === payload.password
@@ -112,7 +112,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isSubmitting: true, error: null });
 
     // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    await new Promise((resolve) => setTimeout(() => resolve(undefined), 800));
 
     // Check if email already exists
     const exists = MOCK_USERS.find(

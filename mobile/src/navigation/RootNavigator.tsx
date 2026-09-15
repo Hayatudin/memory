@@ -1,8 +1,9 @@
 import React, { useEffect } from "react";
-import { View, StyleSheet, StatusBar, ActivityIndicator, Text } from "react-native";
+import { View, StyleSheet, StatusBar, ActivityIndicator, Text, Platform } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createNativeBottomTabNavigator } from "@react-navigation/bottom-tabs/unstable";
 import { useAuthStore } from "../store/authStore";
 import { Theme } from "../theme/index";
 import { BrainGraphic } from "../components/common/BrainGraphic";
@@ -18,7 +19,8 @@ import { AIAssistantScreen } from "../screens/ai/AIAssistantScreen";
 import { AddMemoryModal } from "../screens/memories/AddMemoryModal";
 
 const Stack = createNativeStackNavigator();
-const Tab = createBottomTabNavigator();
+const AndroidTab = createBottomTabNavigator();
+const IOSTab = createNativeBottomTabNavigator();
 const AuthStack = createNativeStackNavigator();
 
 function AuthNavigator() {
@@ -35,9 +37,66 @@ function AuthNavigator() {
   );
 }
 
-function MainTabNavigator() {
+function MainTabNavigatorIOS() {
   return (
-    <Tab.Navigator
+    <IOSTab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: Theme.colors.primary,
+        tabBarMinimizeBehavior: "auto",
+      }}
+    >
+      <IOSTab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{
+          tabBarLabel: "Home",
+          tabBarIcon: ({ focused }) => ({
+            type: "sfSymbol",
+            name: focused ? "house.fill" : "house",
+          }),
+        }}
+      />
+      <IOSTab.Screen
+        name="Search"
+        component={SearchScreen}
+        options={{
+          tabBarLabel: "Search",
+          tabBarIcon: () => ({
+            type: "sfSymbol",
+            name: "magnifyingglass",
+          }),
+        }}
+      />
+      <IOSTab.Screen
+        name="AI"
+        component={AIAssistantScreen}
+        options={{
+          tabBarLabel: "AI",
+          tabBarIcon: () => ({
+            type: "sfSymbol",
+            name: "sparkles",
+          }),
+        }}
+      />
+      <IOSTab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
+          tabBarLabel: "Profile",
+          tabBarIcon: ({ focused }) => ({
+            type: "sfSymbol",
+            name: focused ? "person.fill" : "person",
+          }),
+        }}
+      />
+    </IOSTab.Navigator>
+  );
+}
+
+function MainTabNavigatorAndroid() {
+  return (
+    <AndroidTab.Navigator
       tabBar={(props) => <FloatingTabBar {...props} />}
       screenOptions={{
         headerShown: false,
@@ -48,11 +107,18 @@ function MainTabNavigator() {
         },
       }}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Search" component={SearchScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
-    </Tab.Navigator>
+      <AndroidTab.Screen name="Home" component={HomeScreen} />
+      <AndroidTab.Screen name="Search" component={SearchScreen} />
+      <AndroidTab.Screen name="Profile" component={ProfileScreen} />
+    </AndroidTab.Navigator>
   );
+}
+
+function MainTabNavigator() {
+  if (Platform.OS === "ios") {
+    return <MainTabNavigatorIOS />;
+  }
+  return <MainTabNavigatorAndroid />;
 }
 
 function LoadingScreen() {

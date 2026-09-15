@@ -8,6 +8,7 @@ export type IconName =
   | "user"
   | "sparkles"
   | "bell"
+  | "bell-fill"
   | "camera"
   | "plus"
   | "mic"
@@ -31,6 +32,8 @@ export type IconName =
   | "info"
   | "message"
   | "moon"
+  | "arrow-up"
+  | "send"
   | "close";
 
 interface IconProps {
@@ -121,6 +124,16 @@ export const Icon: React.FC<IconProps> = ({
             strokeWidth={strokeWidth}
             strokeLinecap="round"
             strokeLinejoin="round"
+          />
+        </Svg>
+      );
+
+    case "bell-fill":
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <Path
+            d="M12 2C8.13 2 5 5.13 5 9c0 5.25-2.25 7-2.25 7h18.5S19 14.25 19 9c0-3.87-3.13-7-7-7zm0 20c1.38 0 2.5-1.12 2.5-2.5h-5c0 1.38 1.12 2.5 2.5 2.5z"
+            fill={color}
           />
         </Svg>
       );
@@ -253,19 +266,18 @@ export const Icon: React.FC<IconProps> = ({
     case "video":
       return (
         <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-          <Rect
-            x="2"
-            y="4"
-            width="20"
-            height="16"
-            rx="2"
-            stroke={color}
-            strokeWidth={strokeWidth}
-          />
-          <Path
-            d="M10 9l6 3-6 3V9z"
-            fill={color}
-          />
+          {/* Film frame */}
+          <Rect x="4" y="3" width="16" height="18" rx="2" stroke={color} strokeWidth={1.8} />
+          {/* Left sprocket notches */}
+          <Rect x="5.5" y="5.5" width="2" height="2" rx="0.5" fill={color} />
+          <Rect x="5.5" y="11" width="2" height="2" rx="0.5" fill={color} />
+          <Rect x="5.5" y="16.5" width="2" height="2" rx="0.5" fill={color} />
+          {/* Right sprocket notches */}
+          <Rect x="16.5" y="5.5" width="2" height="2" rx="0.5" fill={color} />
+          <Rect x="16.5" y="11" width="2" height="2" rx="0.5" fill={color} />
+          <Rect x="16.5" y="16.5" width="2" height="2" rx="0.5" fill={color} />
+          {/* Center Play Triangle */}
+          <Path d="M10.5 9.5l4.5 2.5-4.5 2.5V9.5z" fill={color} />
         </Svg>
       );
 
@@ -273,7 +285,7 @@ export const Icon: React.FC<IconProps> = ({
       return (
         <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
           <Path
-            d="M9 18h6M10 22h4M12 2a7 7 0 00-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 001 1h6a1 1 0 001-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 00-7-7z"
+            d="M12 2v2M5 5l1.4 1.4M19 5l-1.4 1.4M9 19h6M10 22h4M12 6a6 6 0 00-6 6c0 2.2 1.2 4.1 3 5.2V18a1 1 0 001 1h4a1 1 0 001-1v-.8c1.8-1.1 3-3 3-5.2a6 6 0 00-6-6z"
             stroke={color}
             strokeWidth={strokeWidth}
             strokeLinecap="round"
@@ -477,6 +489,32 @@ export const Icon: React.FC<IconProps> = ({
         <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
           <Path
             d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </Svg>
+      );
+
+    case "arrow-up":
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <Path
+            d="M12 19V5M5 12l7-7 7 7"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </Svg>
+      );
+
+    case "send":
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <Path
+            d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"
             stroke={color}
             strokeWidth={strokeWidth}
             strokeLinecap="round"

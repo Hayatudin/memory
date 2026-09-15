@@ -8,12 +8,15 @@ import {
   SafeAreaView,
   StatusBar,
   Image,
+  ImageBackground,
 } from "react-native";
 import { useAuthStore } from "../../store/authStore";
 import { Theme } from "../../theme/index";
 import { Icon } from "../../components/common/Icon";
-import { BrainGraphic } from "../../components/common/BrainGraphic";
-import Svg, { Path, Circle, Defs, RadialGradient, Stop } from "react-native-svg";
+import { IOSGlassButton } from "../../components/common/IOSGlassButton";
+import { IOSGlassCapsule } from "../../components/common/IOSGlassCapsule";
+import { IOSGlassCircle } from "../../components/common/IOSGlassCircle";
+import Svg, { Path } from "react-native-svg";
 
 interface HomeScreenProps {
   navigation: any;
@@ -25,88 +28,104 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={Theme.colors.background} />
+      <StatusBar barStyle="light-content" backgroundColor="#000000" />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Top Header: Avatar, Welcome text, and Notification Bell */}
+        {/* ── Top Header: Avatar, Welcome text, and iOS Glass Notification Bell ── */}
         <View style={styles.headerRow}>
           <View style={styles.userProfileGroup}>
-            <View style={styles.avatarGlowingRing}>
-              {profile?.avatarUrl ? (
-                <Image source={{ uri: profile.avatarUrl }} style={styles.avatarImage} />
-              ) : (
-                <View style={styles.avatarPlaceholder}>
-                  <Text style={styles.avatarInitial}>
-                    {displayName.charAt(0).toUpperCase()}
-                  </Text>
-                </View>
-              )}
-            </View>
+            <IOSGlassCircle size={48} strokeWidth={1.4} fill="#18191E">
+              <Image
+                source={require("../../assets/images/user-avatar.png")}
+                style={styles.avatarImage}
+                resizeMode="cover"
+              />
+            </IOSGlassCircle>
             <View style={styles.welcomeTextGroup}>
               <Text style={styles.welcomeSubtitle}>Welcome</Text>
               <Text style={styles.welcomeName}>{displayName}</Text>
             </View>
           </View>
 
-          <TouchableOpacity
-            style={styles.bellButton}
-            activeOpacity={0.8}
+          {/* iOS Circular Glass Button with Specular Gradient Stroke */}
+          <IOSGlassButton
+            size={44}
             onPress={() => {}}
+            style={styles.notificationBtn}
           >
-            <Icon name="bell" size={20} color={Theme.colors.textPrimary} />
-          </TouchableOpacity>
+            <Icon name="bell-fill" size={19} color="#FFFFFF" />
+          </IOSGlassButton>
         </View>
 
-        {/* Hero Section: What do you want to Remember? + Brain Graphic */}
+        {/* ── Hero Section: "What do you want to Remember?" + Larger Glowing Brain ── */}
         <View style={styles.heroRow}>
           <View style={styles.heroTextCol}>
             <Text style={styles.heroSub}>What do you want</Text>
             <Text style={styles.heroMain}>to Remember?</Text>
           </View>
           <View style={styles.heroGraphicCol}>
-            <BrainGraphic size={110} />
+            <Image
+              source={require("../../assets/images/header-brain.jpg")}
+              style={styles.brainImage}
+              resizeMode="contain"
+            />
           </View>
         </View>
 
-        {/* Search Pill */}
+        {/* ── Search Bar with iOS Specular Gradient Stroke & Glass Voice Button ── */}
         <TouchableOpacity
-          style={styles.searchBar}
           activeOpacity={0.9}
           onPress={() => navigation.navigate("Search")}
+          style={styles.searchBarWrapper}
         >
-          <Icon name="search" size={18} color={Theme.colors.textMuted} />
-          <Text style={styles.searchPlaceholder}>Search your memories...</Text>
-          <Icon name="sparkles" size={16} color={Theme.colors.textMuted} />
+          <IOSGlassCapsule
+            height={52}
+            borderRadius={26}
+            strokeWidth={1.4}
+            fill="#141519"
+            contentStyle={styles.searchBarContent}
+          >
+            <Icon name="search" size={18} color="#8E8E93" />
+            <Text style={styles.searchPlaceholder}>Search your memories....</Text>
+            <IOSGlassButton
+              size={34}
+              onPress={() => navigation.navigate("Search")}
+            >
+              <Icon name="sparkles" size={15} color="#D1D5DB" />
+            </IOSGlassButton>
+          </IOSGlassCapsule>
         </TouchableOpacity>
 
-        {/* Dual Primary Action Buttons */}
+        {/* ── Dual Action Buttons: Add Memory & Ask AI (both left-aligned with circular badge) ── */}
         <View style={styles.ctaRow}>
-          {/* Add Memory Button */}
+          {/* Add Memory Button (Neon Chartreuse) */}
           <TouchableOpacity
             style={styles.addMemoryBtn}
             activeOpacity={0.85}
             onPress={() => navigation.navigate("AddMemoryModal")}
           >
             <View style={styles.addMemoryDarkCircle}>
-              <Icon name="plus" size={14} color={Theme.colors.primary} strokeWidth={2.5} />
+              <Icon name="plus" size={16} color="#D4F82C" strokeWidth={2.8} />
             </View>
             <Text style={styles.addMemoryText}>Add Memory</Text>
           </TouchableOpacity>
 
-          {/* Ask AI Button */}
+          {/* Ask AI Button (Left-aligned with circular background for AI icon) */}
           <TouchableOpacity
             style={styles.askAiBtn}
             activeOpacity={0.85}
             onPress={() => navigation.navigate("AIAssistant")}
           >
-            <Icon name="sparkles" size={18} color={Theme.colors.primary} />
+            <IOSGlassCircle size={38} strokeWidth={1.2} fill="#25272F">
+              <Icon name="sparkles" size={16} color="#D4F82C" />
+            </IOSGlassCircle>
             <Text style={styles.askAiText}>Ask AI</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Recent Memories Section */}
+        {/* ── Recent Memories Section ── */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Recent Memories</Text>
           <TouchableOpacity
@@ -125,11 +144,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             onPress={() => {}}
           >
             <View style={styles.memoryIconBadgeCol}>
-              <View style={styles.memoryIconCircle}>
-                <Icon name="link" size={18} color={Theme.colors.textPrimary} />
-              </View>
+              <IOSGlassCircle size={46} strokeWidth={1.4} fill="rgba(24, 25, 30, 0.9)">
+                <Icon name="link" size={19} color="#FFFFFF" strokeWidth={2.2} />
+              </IOSGlassCircle>
               <View style={styles.timestampBadge}>
-                <Text style={styles.timestampBadgeText}>Today</Text>
+                <Text style={styles.timestampBadgeText} numberOfLines={1}>Today</Text>
               </View>
             </View>
 
@@ -140,21 +159,23 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               </Text>
             </View>
 
-            <View style={styles.memoryRightIndicator} />
+            <IOSGlassButton size={26} onPress={() => {}}>
+              <Icon name="chevron-right" size={12} color="#8E8E93" strokeWidth={2.4} />
+            </IOSGlassButton>
           </TouchableOpacity>
 
-          {/* Item 2: Video/Clapper Memory */}
+          {/* Item 2: Video/Film Memory */}
           <TouchableOpacity
             style={styles.memoryItem}
             activeOpacity={0.8}
             onPress={() => {}}
           >
             <View style={styles.memoryIconBadgeCol}>
-              <View style={styles.memoryIconCircle}>
-                <Icon name="video" size={18} color={Theme.colors.textPrimary} />
-              </View>
+              <IOSGlassCircle size={46} strokeWidth={1.4} fill="rgba(24, 25, 30, 0.9)">
+                <Icon name="video" size={18} color="#FFFFFF" />
+              </IOSGlassCircle>
               <View style={styles.timestampBadge}>
-                <Text style={styles.timestampBadgeText}>2 days ago</Text>
+                <Text style={styles.timestampBadgeText} numberOfLines={1}>2 days ago</Text>
               </View>
             </View>
 
@@ -164,25 +185,27 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                 <Text style={styles.memorySubtitle} numberOfLines={1}>
                   https://www.chess.com/play/online
                 </Text>
-                <Icon name="copy" size={12} color={Theme.colors.textMuted} />
+                <Icon name="copy" size={12} color="#6B7280" />
               </View>
             </View>
 
-            <View style={styles.memoryRightIndicator} />
+            <IOSGlassButton size={26} onPress={() => {}}>
+              <Icon name="chevron-right" size={12} color="#8E8E93" strokeWidth={2.4} />
+            </IOSGlassButton>
           </TouchableOpacity>
 
-          {/* Item 3: Idea / Marketing Memory */}
+          {/* Item 3: Marketing / Idea Memory */}
           <TouchableOpacity
             style={styles.memoryItem}
             activeOpacity={0.8}
             onPress={() => {}}
           >
             <View style={styles.memoryIconBadgeCol}>
-              <View style={styles.memoryIconCircle}>
-                <Icon name="lightbulb" size={18} color={Theme.colors.textPrimary} />
-              </View>
+              <IOSGlassCircle size={46} strokeWidth={1.4} fill="rgba(24, 25, 30, 0.9)">
+                <Icon name="lightbulb" size={19} color="#FFFFFF" strokeWidth={2} />
+              </IOSGlassCircle>
               <View style={styles.timestampBadge}>
-                <Text style={styles.timestampBadgeText}>3 days ago</Text>
+                <Text style={styles.timestampBadgeText} numberOfLines={1}>2 days ago</Text>
               </View>
             </View>
 
@@ -193,11 +216,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               </Text>
             </View>
 
-            <View style={styles.memoryRightIndicator} />
+            <IOSGlassButton size={26} onPress={() => {}}>
+              <Icon name="chevron-right" size={12} color="#8E8E93" strokeWidth={2.4} />
+            </IOSGlassButton>
           </TouchableOpacity>
         </View>
 
-        {/* Your Categories Section */}
+        {/* ── Your Categories Section with exact Folder Background ── */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Your Categories</Text>
           <TouchableOpacity
@@ -215,122 +240,140 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         >
           {/* Category Card 1: Entertainment */}
           <TouchableOpacity
-            style={styles.categoryCard}
-            activeOpacity={0.85}
+            activeOpacity={0.88}
             onPress={() => navigation.navigate("Search")}
+            style={styles.categoryCardWrapper}
           >
-            <View style={styles.categoryCardTop}>
-              <Icon name="tv" size={30} color={Theme.colors.primary} strokeWidth={2.2} />
-              {/* Neon Wave illustration */}
-              <Svg width={70} height={24} viewBox="0 0 70 24" fill="none">
-                <Path
-                  d="M2 14 C10 8, 16 20, 24 10 C32 2, 40 18, 48 8 C56 0, 62 16, 68 12"
-                  stroke={Theme.colors.primary}
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  opacity={0.7}
-                />
-              </Svg>
-            </View>
+            <ImageBackground
+              source={require("../../assets/images/category-folder-bg.png")}
+              style={styles.categoryFolderCard}
+              imageStyle={styles.categoryFolderImage}
+            >
+              {/* Top area inside the tab: Icon on left, Wave Graph on right */}
+              <View style={styles.categoryCardTop}>
+                <View style={styles.categoryIconContainer}>
+                  <Icon name="tv" size={30} color="#D4F82C" strokeWidth={2.2} />
+                  {/* Small blue circular play badge */}
+                  <View style={styles.bluePlayBadge}>
+                    <Svg width={7} height={7} viewBox="0 0 8 8">
+                      <Path d="M2 1.5l5 2.5-5 2.5z" fill="#FFFFFF" />
+                    </Svg>
+                  </View>
+                </View>
 
-            <View style={styles.categoryCardBottom}>
-              <View style={styles.categoryMediaStack}>
-                <View style={[styles.miniMediaIcon, { zIndex: 3 }]}>
-                  <Icon name="video" size={10} color={Theme.colors.textPrimary} />
-                </View>
-                <View style={[styles.miniMediaIcon, { marginLeft: -6, zIndex: 2 }]}>
-                  <Icon name="link" size={10} color={Theme.colors.textPrimary} />
-                </View>
-                <View style={[styles.miniMediaIcon, { marginLeft: -6, zIndex: 1 }]}>
-                  <Icon name="lightbulb" size={10} color={Theme.colors.textPrimary} />
-                </View>
+                <Image
+                  source={require("../../assets/images/category-graph.png")}
+                  style={styles.categoryGraphImage}
+                  resizeMode="contain"
+                />
               </View>
-              <View style={styles.countBadge}>
-                <Text style={styles.countBadgeText}>8</Text>
+
+              {/* Bottom area: Overlapping thumbnail bubbles & Count badge & Title */}
+              <View style={styles.categoryCardBottom}>
+                <View style={styles.mediaCountRow}>
+                  <View style={styles.mediaClusterStack}>
+                    <View style={[styles.clusterCircle, { zIndex: 3 }]}>
+                      <Icon name="video" size={11} color="#FFFFFF" />
+                    </View>
+                    <View style={[styles.clusterCircle, { marginLeft: -7, zIndex: 2 }]}>
+                      <Icon name="camera" size={10} color="#FFFFFF" />
+                    </View>
+                    <View style={[styles.clusterCircle, { marginLeft: -7, zIndex: 1 }]}>
+                      <Icon name="link" size={10} color="#FFFFFF" />
+                    </View>
+                  </View>
+                  <View style={styles.countBadge}>
+                    <Text style={styles.countBadgeText}>8</Text>
+                  </View>
+                </View>
+                <Text style={styles.categoryCardTitle}>Entertainment</Text>
               </View>
-            </View>
-            <Text style={styles.categoryCardTitle}>Entertainment</Text>
+            </ImageBackground>
           </TouchableOpacity>
 
           {/* Category Card 2: Ideas */}
           <TouchableOpacity
-            style={styles.categoryCard}
-            activeOpacity={0.85}
+            activeOpacity={0.88}
             onPress={() => navigation.navigate("Search")}
+            style={styles.categoryCardWrapper}
           >
-            <View style={styles.categoryCardTop}>
-              <View style={styles.dualCategoryIcons}>
-                <Icon name="lightbulb" size={28} color={Theme.colors.primary} strokeWidth={2.2} />
-                <View style={styles.diamondOffset}>
-                  <Icon name="diamond" size={16} color={Theme.colors.cyan} />
+            <ImageBackground
+              source={require("../../assets/images/category-folder-bg.png")}
+              style={styles.categoryFolderCard}
+              imageStyle={styles.categoryFolderImage}
+            >
+              {/* Top area inside the tab */}
+              <View style={styles.categoryCardTop}>
+                <View style={styles.categoryIconContainer}>
+                  <Icon name="lightbulb" size={30} color="#D4F82C" strokeWidth={2.2} />
+                  {/* Blue diamond badge */}
+                  <View style={styles.blueDiamondBadge}>
+                    <Icon name="diamond" size={15} color="#60A5FA" />
+                  </View>
                 </View>
-              </View>
-              {/* Neon Wave */}
-              <Svg width={70} height={24} viewBox="0 0 70 24" fill="none">
-                <Path
-                  d="M2 12 C10 18, 18 6, 26 16 C34 22, 42 4, 50 14 C58 20, 64 6, 68 10"
-                  stroke={Theme.colors.primary}
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  opacity={0.7}
-                />
-              </Svg>
-            </View>
 
-            <View style={styles.categoryCardBottom}>
-              <View style={styles.categoryMediaStack}>
-                <View style={[styles.miniMediaIcon, { zIndex: 2 }]}>
-                  <Icon name="lightbulb" size={10} color={Theme.colors.textPrimary} />
-                </View>
-                <View style={[styles.miniMediaIcon, { marginLeft: -6, zIndex: 1 }]}>
-                  <Icon name="diamond" size={10} color={Theme.colors.textPrimary} />
-                </View>
+                <Image
+                  source={require("../../assets/images/category-graph.png")}
+                  style={styles.categoryGraphImage}
+                  resizeMode="contain"
+                />
               </View>
-              <View style={styles.countBadge}>
-                <Text style={styles.countBadgeText}>3</Text>
+
+              {/* Bottom area */}
+              <View style={styles.categoryCardBottom}>
+                <View style={styles.mediaCountRow}>
+                  <View style={styles.mediaClusterStack}>
+                    <View style={[styles.clusterCircle, { zIndex: 3 }]}>
+                      <Icon name="lightbulb" size={11} color="#FFFFFF" />
+                    </View>
+                    <View style={[styles.clusterCircle, { marginLeft: -7, zIndex: 2 }]}>
+                      <Icon name="diamond" size={10} color="#FFFFFF" />
+                    </View>
+                    <View style={[styles.clusterCircle, { marginLeft: -7, zIndex: 1 }]}>
+                      <Icon name="sparkles" size={10} color="#FFFFFF" />
+                    </View>
+                  </View>
+                  <View style={styles.countBadge}>
+                    <Text style={styles.countBadgeText}>3</Text>
+                  </View>
+                </View>
+                <Text style={styles.categoryCardTitle}>Ideas</Text>
               </View>
-            </View>
-            <Text style={styles.categoryCardTitle}>Ideas</Text>
+            </ImageBackground>
           </TouchableOpacity>
         </ScrollView>
 
-        {/* AI Insight Section */}
+        {/* ── AI Insight Section with circular particle background and Ask AI button ── */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>AI Insight</Text>
         </View>
 
         <TouchableOpacity
-          style={styles.insightCard}
-          activeOpacity={0.9}
+          style={styles.insightCardWrapper}
+          activeOpacity={0.88}
           onPress={() => navigation.navigate("AIAssistant")}
         >
-          <View style={styles.insightTextCol}>
-            <Text style={styles.insightTitle}>Smart Suggestion</Text>
-            <Text style={styles.insightDesc}>
-              You have 5 ideas on marketing saved. Want a summary?
-            </Text>
-          </View>
+          <ImageBackground
+            source={require("../../assets/images/ai-insight-bg.png")}
+            style={styles.insightCard}
+            imageStyle={styles.insightCardImage}
+          >
+            <View style={styles.insightTextCol}>
+              <Text style={styles.insightTitle}>Smart Suggestion</Text>
+              <Text style={styles.insightDesc}>
+                You have 5 ideas on marketing saved. Want a summary?
+              </Text>
 
-          {/* 3D Glass Glowing Orb */}
-          <View style={styles.insightOrbCol}>
-            <Svg width={64} height={64} viewBox="0 0 64 64">
-              <Defs>
-                <RadialGradient id="orbGrad" cx="35%" cy="30%" r="70%">
-                  <Stop offset="0%" stopColor="#4A4F59" stopOpacity="0.9" />
-                  <Stop offset="45%" stopColor="#25282F" stopOpacity="0.8" />
-                  <Stop offset="100%" stopColor="#141518" stopOpacity="1" />
-                </RadialGradient>
-                <RadialGradient id="orbGlow" cx="50%" cy="50%" r="50%">
-                  <Stop offset="0%" stopColor={Theme.colors.primary} stopOpacity="0.25" />
-                  <Stop offset="100%" stopColor={Theme.colors.primary} stopOpacity="0" />
-                </RadialGradient>
-              </Defs>
-              <Circle cx="32" cy="32" r="30" fill="url(#orbGlow)" />
-              <Circle cx="32" cy="32" r="26" fill="url(#orbGrad)" stroke="#3A3F4A" strokeWidth="1" />
-              {/* Specular highlight */}
-              <Circle cx="24" cy="22" r="5" fill="#FFFFFF" opacity={0.3} />
-            </Svg>
-          </View>
+              {/* Ask AI Pill Button as in the design */}
+              <TouchableOpacity
+                style={styles.insightAskAiBtn}
+                activeOpacity={0.85}
+                onPress={() => navigation.navigate("AIAssistant")}
+              >
+                <Text style={styles.insightAskAiText}>Ask AI</Text>
+              </TouchableOpacity>
+            </View>
+          </ImageBackground>
         </TouchableOpacity>
 
         {/* Bottom spacer for floating navigation bar */}
@@ -343,115 +386,92 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Theme.colors.background,
+    backgroundColor: "#000000",
   },
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 12,
+    paddingHorizontal: 18,
+    paddingTop: 10,
   },
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 20,
+    marginBottom: 16,
   },
   userProfileGroup: {
     flexDirection: "row",
     alignItems: "center",
   },
-  avatarGlowingRing: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 2,
-    borderColor: Theme.colors.primary,
-    padding: 2,
-    justifyContent: "center",
-    alignItems: "center",
-  },
   avatarImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
-  avatarPlaceholder: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Theme.colors.surfaceHighlight,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  avatarInitial: {
-    color: Theme.colors.primary,
-    fontSize: 18,
-    fontWeight: "700",
+    width: 44,
+    height: 44,
+    borderRadius: 22,
   },
   welcomeTextGroup: {
     marginLeft: 12,
   },
   welcomeSubtitle: {
-    fontSize: 13,
-    color: Theme.colors.textSecondary,
+    fontSize: 12,
+    color: "#8E8E93",
     fontWeight: "400",
+    marginBottom: 2,
   },
   welcomeName: {
-    fontSize: 18,
+    fontSize: 19,
     fontWeight: "700",
-    color: Theme.colors.textPrimary,
+    color: "#FFFFFF",
+    letterSpacing: -0.3,
   },
-  bellButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: Theme.colors.surfacePill,
-    borderWidth: 1,
-    borderColor: Theme.colors.border,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  notificationBtn: {},
   heroRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 20,
+    marginBottom: 16,
+    minHeight: 165,
+    overflow: "visible",
   },
   heroTextCol: {
     flex: 1,
+    paddingRight: 6,
+    zIndex: 2,
   },
   heroSub: {
-    fontSize: 22,
+    fontSize: 23,
     color: "#D1D5DB",
     fontWeight: "400",
+    lineHeight: 28,
   },
   heroMain: {
-    fontSize: 28,
+    fontSize: 29,
     fontWeight: "800",
-    color: Theme.colors.textPrimary,
+    color: "#FFFFFF",
     marginTop: 2,
     letterSpacing: -0.5,
   },
   heroGraphicCol: {
-    width: 110,
-    height: 110,
+    width: 175,
+    height: 165,
     justifyContent: "center",
     alignItems: "center",
+    marginRight: -6,
   },
-  searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: Theme.colors.surface,
-    height: 48,
-    borderRadius: Theme.borderRadius.full,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: Theme.colors.border,
-    marginBottom: 16,
+  brainImage: {
+    width: 175,
+    height: 165,
+  },
+  searchBarWrapper: {
+    marginBottom: 20,
+  },
+  searchBarContent: {
+    paddingLeft: 16,
+    paddingRight: 8,
+    justifyContent: "space-between",
   },
   searchPlaceholder: {
     flex: 1,
     fontSize: 14,
-    color: Theme.colors.textMuted,
+    color: "#8E8E93",
     marginLeft: 10,
   },
   ctaRow: {
@@ -459,74 +479,78 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 28,
+    gap: 12,
   },
   addMemoryBtn: {
-    flex: 1.1,
-    height: 52,
-    backgroundColor: Theme.colors.primary,
-    borderRadius: Theme.borderRadius.full,
+    flex: 1,
+    height: 54,
+    backgroundColor: "#D4F82C",
+    borderRadius: 27,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 14,
-    marginRight: 10,
-    shadowColor: Theme.colors.primary,
+    justifyContent: "flex-start",
+    paddingLeft: 8,
+    paddingRight: 16,
+    shadowColor: "#D4F82C",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
     shadowRadius: 10,
     elevation: 5,
   },
   addMemoryDarkCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: "#0B0E02",
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: "#0A0D02",
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 10,
   },
   addMemoryText: {
     fontSize: 15,
     fontWeight: "700",
-    color: Theme.colors.textOnPrimary,
+    color: "#0A0D02",
+    marginLeft: 10,
   },
   askAiBtn: {
     flex: 1,
-    height: 52,
-    backgroundColor: Theme.colors.surfacePill,
-    borderRadius: Theme.borderRadius.full,
+    height: 54,
+    backgroundColor: "#181A20",
+    borderRadius: 27,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
+    paddingLeft: 8,
+    paddingRight: 16,
     borderWidth: 1,
-    borderColor: Theme.colors.border,
+    borderColor: "rgba(255, 255, 255, 0.12)",
   },
   askAiText: {
     fontSize: 15,
     fontWeight: "600",
-    color: Theme.colors.textPrimary,
-    marginLeft: 8,
+    color: "#FFFFFF",
+    marginLeft: 10,
   },
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 14,
+    marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: "700",
-    color: Theme.colors.textPrimary,
+    color: "#FFFFFF",
   },
   seeAllButton: {
     paddingVertical: 4,
   },
   seeAllText: {
-    fontSize: 12,
-    color: Theme.colors.textSecondary,
+    fontSize: 13,
+    color: "#8E8E93",
     fontWeight: "500",
   },
   memoriesList: {
-    marginBottom: 24,
+    marginBottom: 26,
   },
   memoryItem: {
     flexDirection: "row",
@@ -534,30 +558,31 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   memoryIconBadgeCol: {
+    width: 58,
+    height: 56,
     alignItems: "center",
     marginRight: 14,
-  },
-  memoryIconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: Theme.colors.surfacePill,
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: Theme.colors.border,
+    position: "relative",
   },
   timestampBadge: {
-    marginTop: 4,
-    backgroundColor: "#191B1F",
+    position: "absolute",
+    bottom: -4,
+    backgroundColor: "#111317",
     paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingVertical: 1.5,
     borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.14)",
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 44,
   },
   timestampBadgeText: {
-    fontSize: 9,
-    color: Theme.colors.textMuted,
+    fontSize: 7.5,
+    color: "#9CA3AF",
     fontWeight: "600",
+    textAlign: "center",
+    letterSpacing: -0.2,
   },
   memoryTextContent: {
     flex: 1,
@@ -565,120 +590,152 @@ const styles = StyleSheet.create({
   memoryTitle: {
     fontSize: 15,
     fontWeight: "600",
-    color: Theme.colors.textPrimary,
-    marginBottom: 2,
+    color: "#FFFFFF",
+    marginBottom: 3,
   },
   memorySubtitle: {
     fontSize: 12,
-    color: Theme.colors.textSecondary,
+    color: "#8E8E93",
   },
   memoryLinkRow: {
     flexDirection: "row",
     alignItems: "center",
-  },
-  memoryRightIndicator: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: "#202328",
-    marginLeft: 8,
+    gap: 4,
   },
   categoriesScrollRow: {
     paddingRight: 20,
-    marginBottom: 24,
+    marginBottom: 28,
   },
-  categoryCard: {
-    width: 150,
-    height: 140,
-    backgroundColor: Theme.colors.surface,
-    borderRadius: Theme.borderRadius.lg,
-    padding: 14,
-    marginRight: 12,
-    borderWidth: 1,
-    borderColor: Theme.colors.border,
+  categoryCardWrapper: {
+    marginRight: 14,
+  },
+  categoryFolderCard: {
+    width: 174,
+    height: 166,
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 14,
     justifyContent: "space-between",
+  },
+  categoryFolderImage: {
+    resizeMode: "stretch",
   },
   categoryCardTop: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
-  dualCategoryIcons: {
-    flexDirection: "row",
-    alignItems: "flex-end",
+  categoryIconContainer: {
+    position: "relative",
   },
-  diamondOffset: {
-    marginLeft: -6,
-    marginBottom: -4,
+  bluePlayBadge: {
+    position: "absolute",
+    bottom: -3,
+    right: -5,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: "#2563EB",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  blueDiamondBadge: {
+    position: "absolute",
+    bottom: -6,
+    right: -8,
+  },
+  categoryGraphImage: {
+    width: 76,
+    height: 32,
   },
   categoryCardBottom: {
+    marginTop: "auto",
+  },
+  mediaCountRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
-  categoryMediaStack: {
+  mediaClusterStack: {
     flexDirection: "row",
     alignItems: "center",
   },
-  miniMediaIcon: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: "#22252A",
+  clusterCircle: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: "#22252B",
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#161719",
+    borderWidth: 1.5,
+    borderColor: "#FFFFFF",
   },
   countBadge: {
-    backgroundColor: "#262930",
+    backgroundColor: "#2A2D35",
     paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingVertical: 2.5,
     borderRadius: 10,
   },
   countBadgeText: {
     fontSize: 12,
     fontWeight: "700",
-    color: Theme.colors.textPrimary,
+    color: "#FFFFFF",
   },
   categoryCardTitle: {
     fontSize: 15,
-    fontWeight: "600",
-    color: Theme.colors.textPrimary,
+    fontWeight: "700",
+    color: "#FFFFFF",
+    marginTop: 8,
+  },
+  insightCardWrapper: {
+    width: "100%",
+    alignSelf: "stretch",
+    marginBottom: 20,
+    borderRadius: 24,
+    overflow: "hidden",
   },
   insightCard: {
-    backgroundColor: Theme.colors.surface,
-    borderRadius: Theme.borderRadius.lg,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: Theme.colors.border,
+    width: "100%",
+    minHeight: 138,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 24,
+    padding: 18,
+  },
+  insightCardImage: {
+    borderRadius: 24,
+    resizeMode: "cover",
   },
   insightTextCol: {
-    flex: 1,
-    paddingRight: 12,
+    width: "66%",
   },
   insightTitle: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "700",
-    color: Theme.colors.textPrimary,
-    marginBottom: 4,
+    color: "#FFFFFF",
+    marginBottom: 5,
   },
   insightDesc: {
     fontSize: 13,
-    color: Theme.colors.textSecondary,
+    color: "#9CA3AF",
     lineHeight: 18,
+    fontWeight: "400",
+    marginBottom: 10,
   },
-  insightOrbCol: {
-    width: 64,
-    height: 64,
-    justifyContent: "center",
-    alignItems: "center",
+  insightAskAiBtn: {
+    backgroundColor: "#D4F82C",
+    borderRadius: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+    alignSelf: "flex-start",
+  },
+  insightAskAiText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#0A0D02",
   },
   bottomSpacer: {
-    height: 100,
+    height: 110,
   },
 });
+
+

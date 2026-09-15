@@ -9,8 +9,9 @@ import {
   StatusBar,
   TextInput,
 } from "react-native";
-import { Theme } from "../../theme/index";
 import { Icon, IconName } from "../../components/common/Icon";
+import { IOSGlassCapsule } from "../../components/common/IOSGlassCapsule";
+import { NotchedCategoryCard } from "../../components/common/NotchedCategoryCard";
 
 interface CategoryItem {
   id: string;
@@ -20,7 +21,7 @@ interface CategoryItem {
 }
 
 const INITIAL_CATEGORIES: CategoryItem[] = [
-  { id: "1", name: "Entertainment", count: 0, icon: "tv" },
+  { id: "1", name: "Entertainment", count: 0, icon: "video" },
   { id: "2", name: "Ideas", count: 0, icon: "lightbulb" },
   { id: "3", name: "Music", count: 0, icon: "music" },
   { id: "4", name: "Tech", count: 0, icon: "tech" },
@@ -37,7 +38,7 @@ export const SearchScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={Theme.colors.background} />
+      <StatusBar barStyle="light-content" backgroundColor="#000000" />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -45,71 +46,64 @@ export const SearchScreen: React.FC = () => {
         {/* Title */}
         <Text style={styles.screenTitle}>Search</Text>
 
-        {/* Search and Add Category Row */}
+        {/* Search Bar and Add Category Row with iOS Specular Glass styling */}
         <View style={styles.searchRow}>
-          <View style={styles.searchInputWrapper}>
-            <Icon name="search" size={16} color={Theme.colors.textMuted} />
-            <TextInput
-              placeholder="Search your memories..."
-              placeholderTextColor={Theme.colors.textMuted}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              style={styles.searchInput}
-            />
+          <View style={styles.searchInputContainer}>
+            <IOSGlassCapsule
+              height={48}
+              borderRadius={24}
+              strokeWidth={1.2}
+              fill="#16181D"
+              gradientId="searchScreenInputGrad"
+              style={styles.searchCapsule}
+              contentStyle={styles.searchCapsuleContent}
+            >
+              <Icon name="search" size={17} color="#8E8E93" />
+              <TextInput
+                placeholder="Search your memories..."
+                placeholderTextColor="#8E8E93"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                style={styles.searchInput}
+              />
+            </IOSGlassCapsule>
           </View>
 
           <TouchableOpacity
-            style={styles.addCategoryBtn}
             activeOpacity={0.8}
             onPress={() => {}}
+            style={styles.addCategoryBtnWrapper}
           >
-            <Text style={styles.addCategoryText}>+ Add Category</Text>
+            <IOSGlassCapsule
+              height={48}
+              borderRadius={24}
+              strokeWidth={1.2}
+              fill="#191B22"
+              gradientId="searchAddCategoryGrad"
+              style={styles.addCategoryCapsule}
+              contentStyle={styles.addCategoryContent}
+            >
+              <Text style={styles.addCategoryPlus}>+ </Text>
+              <Text style={styles.addCategoryLabel}>Add Category</Text>
+            </IOSGlassCapsule>
           </TouchableOpacity>
         </View>
 
-        {/* 2-Column Grid of Category Cards */}
+        {/* 2-Column Grid of Custom Notched Category Cards */}
         <View style={styles.categoryGrid}>
           {filteredCategories.map((item) => (
-            <TouchableOpacity
+            <NotchedCategoryCard
               key={item.id}
-              style={styles.categoryCard}
-              activeOpacity={0.85}
+              id={item.id}
+              name={item.name}
+              count={item.count}
+              icon={item.icon}
               onPress={() => {}}
-            >
-              {/* Layered 3D Folder Icon */}
-              <View style={styles.folderIconContainer}>
-                {/* Back Layer */}
-                <View style={styles.folderBackLayer} />
-                {/* Front Layer */}
-                <View style={styles.folderFrontLayer}>
-                  <Icon name={item.icon} size={18} color="#FFFFFF" strokeWidth={2.2} />
-                </View>
-              </View>
-
-              {/* Title and Count */}
-              <View style={styles.cardInfo}>
-                <Text style={styles.categoryTitle}>{item.name}</Text>
-                <Text style={styles.categoryCount}>{item.count} Items</Text>
-              </View>
-
-              {/* Corner Notch with Diagonal Arrow */}
-              <View style={styles.cornerNotchContainer}>
-                <View style={styles.notchCutout}>
-                  <View style={styles.arrowButton}>
-                    <Icon
-                      name="arrow-up-right"
-                      size={14}
-                      color={Theme.colors.textPrimary}
-                      strokeWidth={2.4}
-                    />
-                  </View>
-                </View>
-              </View>
-            </TouchableOpacity>
+            />
           ))}
         </View>
 
-        {/* Bottom Spacer for floating bottom bar */}
+        {/* Bottom Spacer for floating bottom navigation bar */}
         <View style={styles.bottomSpacer} />
       </ScrollView>
     </SafeAreaView>
@@ -119,144 +113,73 @@ export const SearchScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Theme.colors.background,
+    backgroundColor: "#000000",
   },
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 16,
   },
   screenTitle: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: "700",
-    color: Theme.colors.textPrimary,
+    color: "#FFFFFF",
     marginBottom: 20,
+    letterSpacing: -0.4,
   },
   searchRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 22,
+    gap: 10,
+    width: "100%",
   },
-  searchInputWrapper: {
+  searchInputContainer: {
     flex: 1,
-    height: 44,
-    backgroundColor: Theme.colors.surface,
-    borderRadius: Theme.borderRadius.full,
+  },
+  searchCapsule: {
+    width: "100%",
+  },
+  searchCapsuleContent: {
+    paddingHorizontal: 14,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 14,
-    borderWidth: 1,
-    borderColor: Theme.colors.border,
-    marginRight: 10,
   },
   searchInput: {
     flex: 1,
     marginLeft: 8,
-    color: Theme.colors.textPrimary,
-    fontSize: 13,
+    color: "#FFFFFF",
+    fontSize: 14,
     paddingVertical: 0,
   },
-  addCategoryBtn: {
-    height: 44,
-    backgroundColor: Theme.colors.surfacePill,
-    borderRadius: Theme.borderRadius.full,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 14,
-    borderWidth: 1,
-    borderColor: Theme.colors.border,
+  addCategoryBtnWrapper: {
+    width: 128,
+    flexShrink: 0,
   },
-  addCategoryText: {
-    color: Theme.colors.textPrimary,
-    fontSize: 13,
-    fontWeight: "500",
+  addCategoryCapsule: {
+    width: 128,
+  },
+  addCategoryContent: {
+    paddingHorizontal: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  addCategoryPlus: {
+    color: "#D4F82C",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  addCategoryLabel: {
+    color: "#FFFFFF",
+    fontSize: 13.5,
+    fontWeight: "600",
   },
   categoryGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
   },
-  categoryCard: {
-    width: "48%",
-    height: 180,
-    backgroundColor: Theme.colors.surface,
-    borderRadius: Theme.borderRadius.lg,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: Theme.colors.border,
-    position: "relative",
-    justifyContent: "space-between",
-  },
-  folderIconContainer: {
-    width: 48,
-    height: 48,
-    position: "relative",
-  },
-  folderBackLayer: {
-    position: "absolute",
-    top: 0,
-    left: 8,
-    width: 40,
-    height: 38,
-    borderRadius: 8,
-    backgroundColor: "#739912",
-  },
-  folderFrontLayer: {
-    position: "absolute",
-    top: 4,
-    left: 0,
-    width: 42,
-    height: 40,
-    borderRadius: 8,
-    backgroundColor: "#8EB818",
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  cardInfo: {
-    marginTop: 16,
-  },
-  categoryTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: Theme.colors.textPrimary,
-    marginBottom: 4,
-  },
-  categoryCount: {
-    fontSize: 12,
-    color: Theme.colors.textSecondary,
-  },
-  cornerNotchContainer: {
-    position: "absolute",
-    bottom: -1,
-    right: -1,
-    width: 44,
-    height: 44,
-  },
-  notchCutout: {
-    width: "100%",
-    height: "100%",
-    backgroundColor: Theme.colors.background,
-    borderTopLeftRadius: 16,
-    borderBottomRightRadius: Theme.borderRadius.lg,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  arrowButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: Theme.colors.surfacePill,
-    borderWidth: 1,
-    borderColor: Theme.colors.border,
-    justifyContent: "center",
-    alignItems: "center",
-  },
   bottomSpacer: {
-    height: 100,
+    height: 110,
   },
 });

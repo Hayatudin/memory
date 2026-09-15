@@ -13,6 +13,8 @@ import {
 import { useAuthStore } from "../../store/authStore";
 import { Theme } from "../../theme/index";
 import { Icon, IconName } from "../../components/common/Icon";
+import { IOSGlassCircle } from "../../components/common/IOSGlassCircle";
+import { IOSGlassButton } from "../../components/common/IOSGlassButton";
 
 interface SettingItem {
   id: string;
@@ -29,7 +31,7 @@ interface SettingSection {
 export const ProfileScreen: React.FC = () => {
   const { user, profile, logout, isSubmitting } = useAuthStore();
 
-  const displayName = profile?.displayName || user?.name || "Orhan_hy";
+  const displayName = profile?.displayName || user?.name || "Orhan hy!";
 
   const handleLogout = () => {
     Alert.alert(
@@ -59,7 +61,7 @@ export const ProfileScreen: React.FC = () => {
     {
       title: "PREFERENCES",
       items: [
-        { id: "notifications", label: "Notifications", icon: "bell" },
+        { id: "notifications", label: "Notifications", icon: "bell-fill" },
         { id: "appearance", label: "Appearance", icon: "moon" },
       ],
     },
@@ -82,7 +84,7 @@ export const ProfileScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={Theme.colors.background} />
+      <StatusBar barStyle="light-content" backgroundColor="#000000" />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -93,18 +95,20 @@ export const ProfileScreen: React.FC = () => {
         {/* User Avatar & Name */}
         <View style={styles.profileHeader}>
           <View style={styles.avatarWrapper}>
-            {profile?.avatarUrl ? (
-              <Image source={{ uri: profile.avatarUrl }} style={styles.avatarImage} />
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <Text style={styles.avatarInitial}>
-                  {displayName.charAt(0).toUpperCase()}
-                </Text>
-              </View>
-            )}
-            {/* Camera Badge */}
+            <IOSGlassCircle size={100} strokeWidth={1.8} fill="#18191E">
+              {profile?.avatarUrl ? (
+                <Image source={{ uri: profile.avatarUrl }} style={styles.avatarImage} />
+              ) : (
+                <Image
+                  source={require("../../assets/images/user-avatar.png")}
+                  style={styles.avatarImage}
+                  resizeMode="cover"
+                />
+              )}
+            </IOSGlassCircle>
+            {/* Camera Badge with iOS specular button styling */}
             <TouchableOpacity style={styles.cameraBadge} activeOpacity={0.8}>
-              <Icon name="camera" size={14} color={Theme.colors.black} strokeWidth={2.4} />
+              <Icon name="camera" size={13} color="#0A0D02" strokeWidth={2.4} />
             </TouchableOpacity>
           </View>
 
@@ -116,10 +120,12 @@ export const ProfileScreen: React.FC = () => {
               <Text style={styles.statNumber}>248</Text>
               <Text style={styles.statLabel}>Memories</Text>
             </View>
+            <View style={styles.statDivider} />
             <View style={styles.statCol}>
               <Text style={styles.statNumber}>18</Text>
               <Text style={styles.statLabel}>Categories</Text>
             </View>
+            <View style={styles.statDivider} />
             <View style={styles.statCol}>
               <Text style={styles.statNumber}>42</Text>
               <Text style={styles.statLabel}>This Week</Text>
@@ -143,20 +149,25 @@ export const ProfileScreen: React.FC = () => {
                   onPress={item.onPress || (() => {})}
                 >
                   <View style={styles.settingItemLeft}>
-                    <View style={styles.settingIconWrapper}>
+                    {/* iOS Glass Circle around each icon */}
+                    <IOSGlassCircle size={36} strokeWidth={1.2} fill="rgba(30, 33, 40, 0.9)">
                       <Icon
                         name={item.icon}
-                        size={18}
-                        color={Theme.colors.textSecondary}
+                        size={17}
+                        color="#E5E7EB"
+                        strokeWidth={2}
                       />
-                    </View>
+                    </IOSGlassCircle>
                     <Text style={styles.settingItemLabel}>{item.label}</Text>
                   </View>
-                  <Icon
-                    name="chevron-right"
-                    size={16}
-                    color={Theme.colors.textMuted}
-                  />
+                  <IOSGlassButton size={28} onPress={item.onPress}>
+                    <Icon
+                      name="chevron-right"
+                      size={13}
+                      color="#8E8E93"
+                      strokeWidth={2.4}
+                    />
+                  </IOSGlassButton>
                 </TouchableOpacity>
               ))}
             </View>
@@ -189,7 +200,7 @@ export const ProfileScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Theme.colors.background,
+    backgroundColor: "#000000",
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -198,121 +209,115 @@ const styles = StyleSheet.create({
   screenTitle: {
     fontSize: 28,
     fontWeight: "700",
-    color: Theme.colors.textPrimary,
+    color: "#FFFFFF",
     marginBottom: 20,
   },
   profileHeader: {
     alignItems: "center",
-    marginBottom: 28,
+    marginBottom: 24,
   },
   avatarWrapper: {
     position: "relative",
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     marginBottom: 14,
-  },
-  avatarImage: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-  },
-  avatarPlaceholder: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: Theme.colors.surfaceElevated,
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: Theme.colors.border,
   },
-  avatarInitial: {
-    fontSize: 36,
-    fontWeight: "700",
-    color: Theme.colors.primary,
+  avatarImage: {
+    width: 92,
+    height: 92,
+    borderRadius: 46,
   },
   cameraBadge: {
     position: "absolute",
     bottom: 0,
     right: 0,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: Theme.colors.primary,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: "#D4F82C",
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 2,
-    borderColor: Theme.colors.background,
+    borderColor: "#000000",
   },
   profileName: {
-    fontSize: 20,
+    fontSize: 21,
     fontWeight: "700",
-    color: Theme.colors.textPrimary,
-    marginBottom: 20,
+    color: "#FFFFFF",
+    marginBottom: 18,
   },
   statsRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
     width: "100%",
+    backgroundColor: "#14161C",
+    borderRadius: 20,
+    paddingVertical: 14,
     paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.08)",
   },
   statCol: {
     alignItems: "center",
+    flex: 1,
+  },
+  statDivider: {
+    width: 1,
+    height: 28,
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
   },
   statNumber: {
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: "700",
-    color: Theme.colors.textPrimary,
+    color: "#FFFFFF",
     marginBottom: 4,
   },
   statLabel: {
-    fontSize: 13,
-    color: Theme.colors.textSecondary,
+    fontSize: 12,
+    color: "#8E8E93",
   },
   sectionContainer: {
     marginBottom: 20,
   },
   sectionHeaderTitle: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "600",
-    color: Theme.colors.textMuted,
+    color: "#8E8E93",
     marginBottom: 8,
     marginLeft: 4,
-    letterSpacing: 0.5,
+    letterSpacing: 0.6,
   },
   sectionCard: {
-    backgroundColor: Theme.colors.surface,
-    borderRadius: Theme.borderRadius.lg,
+    backgroundColor: "#14161C",
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: Theme.colors.border,
+    borderColor: "rgba(255, 255, 255, 0.08)",
     overflow: "hidden",
   },
   settingItemRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 14,
+    paddingVertical: 13,
     paddingHorizontal: 16,
   },
   settingItemBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: Theme.colors.border,
+    borderBottomColor: "rgba(255, 255, 255, 0.06)",
   },
   settingItemLeft: {
     flexDirection: "row",
     alignItems: "center",
   },
-  settingIconWrapper: {
-    width: 28,
-    alignItems: "center",
-    marginRight: 10,
-  },
   settingItemLabel: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "500",
-    color: Theme.colors.textPrimary,
+    color: "#FFFFFF",
+    marginLeft: 12,
   },
   footerSection: {
     alignItems: "center",
@@ -321,21 +326,21 @@ const styles = StyleSheet.create({
   },
   versionText: {
     fontSize: 12,
-    color: Theme.colors.textMuted,
+    color: "#8E8E93",
     marginBottom: 14,
   },
   logoutButton: {
     width: "100%",
-    height: 50,
-    backgroundColor: Theme.colors.dangerDark,
-    borderRadius: Theme.borderRadius.full,
+    height: 52,
+    backgroundColor: "rgba(239, 68, 68, 0.12)",
+    borderRadius: 26,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: Theme.colors.dangerBorder,
+    borderColor: "rgba(239, 68, 68, 0.3)",
   },
   logoutButtonText: {
-    color: Theme.colors.dangerText,
+    color: "#F87171",
     fontSize: 15,
     fontWeight: "600",
   },

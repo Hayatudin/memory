@@ -1,6 +1,7 @@
 {
-  "extends": "@react-native/typescript-config/tsconfig.json",
+  "extends": "../node_modules/@react-native/typescript-config/tsconfig.json",
   "compilerOptions": {
+    "ignoreDeprecations": "6.0",
     "target": "ESNext",
     "module": "ESNext",
     "lib": ["ES2021"],
