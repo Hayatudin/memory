@@ -10,7 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { launchImageLibrary } from "react-native-image-picker";
+import * as ImagePicker from "expo-image-picker";
 import { MemoriesApi } from "../../api/memories.api";
 import { StorageApi } from "../../api/storage.api";
 import { useMemoryStore } from "../../store/memoryStore";
@@ -32,12 +32,17 @@ export const CreateMemoryScreen = ({ navigation }: any) => {
 
   const handlePickImage = async () => {
     try {
-      const result = await launchImageLibrary({
-        mediaType: "photo",
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert("Permission Required", "Photo library access is needed to select a photo.");
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
         quality: 0.8,
       });
 
-      if (result.assets && result.assets.length > 0) {
+      if (!result.canceled && result.assets && result.assets.length > 0) {
         setSelectedAsset(result.assets[0]);
         setSourceType("image");
       }

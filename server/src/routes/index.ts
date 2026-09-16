@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { requireAuth } from "../middleware/auth.js";
 import { checkDatabaseConnection } from "../db/index.js";
 import { UserController } from "../modules/user/user.controller.js";
+import { aiRouter } from "./ai.routes.js";
 
 const router = Router();
 
@@ -37,5 +38,10 @@ router.get("/health", async (_req: Request, res: Response) => {
  * Authenticated Current User & Profile Endpoint
  */
 router.get("/me", requireAuth, UserController.getMe);
+
+/**
+ * AI & Speech Transcription Routes
+ */
+router.use("/ai", aiRouter);
 
 export const apiRouter = router;

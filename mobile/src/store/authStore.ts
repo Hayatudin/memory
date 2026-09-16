@@ -48,6 +48,7 @@ interface AuthState {
   logout: () => Promise<void>;
   clearError: () => void;
   refreshProfile: () => Promise<void>;
+  updateAvatar: (avatarUrl: string) => void;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -178,4 +179,26 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     // In mock mode, profile is already up to date
     set({ profile });
   },
+
+  updateAvatar: (avatarUrl: string) => {
+    const { profile, user } = get();
+    if (profile) {
+      set({ profile: { ...profile, avatarUrl } });
+    } else if (user) {
+      set({
+        profile: {
+          id: `mock-profile-${Date.now()}`,
+          userId: user.id,
+          displayName: user.name,
+          bio: null,
+          avatarUrl,
+          timezone: "UTC",
+          preferences: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      });
+    }
+  },
 }));
+

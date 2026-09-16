@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -9,12 +9,14 @@ import {
   StatusBar,
   Image,
   Alert,
+  ActionSheetIOS,
+  Platform,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { useAuthStore } from "../../store/authStore";
-import { Theme } from "../../theme/index";
 import { Icon, IconName } from "../../components/common/Icon";
-import { IOSGlassCircle } from "../../components/common/IOSGlassCircle";
-import { IOSGlassButton } from "../../components/common/IOSGlassButton";
+
+const DEMO_AVATAR = require("../../assets/avatar_demo.jpg");
 
 interface SettingItem {
   id: string;
@@ -29,9 +31,83 @@ interface SettingSection {
 }
 
 export const ProfileScreen: React.FC = () => {
-  const { user, profile, logout, isSubmitting } = useAuthStore();
+  const { user, profile, logout, isSubmitting, updateAvatar } = useAuthStore();
+  const [avatarUri, setAvatarUri] = useState<string | null>(null);
 
-  const displayName = profile?.displayName || user?.name || "Orhan hy!";
+  const displayName = profile?.displayName || user?.name || "Orhan_hy";
+
+  // Camera badge responsive image picker
+  const handleCameraBadgePress = () => {
+    if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ["Cancel", "Take Photo", "Choose from Library"],
+          cancelButtonIndex: 0,
+        },
+        async (buttonIndex) => {
+          if (buttonIndex === 1) {
+            await handleLaunchCamera();
+          } else if (buttonIndex === 2) {
+            await handleLaunchImageLibrary();
+          }
+        }
+      );
+    } else {
+      Alert.alert("Profile Photo", "Choose an option", [
+        { text: "Cancel", style: "cancel" },
+        { text: "Take Photo", onPress: handleLaunchCamera },
+        { text: "Choose from Library", onPress: handleLaunchImageLibrary },
+      ]);
+    }
+  };
+
+  const handleLaunchCamera = async () => {
+    try {
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert("Permission Required", "Camera access is needed to capture a photo.");
+        return;
+      }
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.85,
+      });
+      if (!result.canceled && result.assets && result.assets.length > 0 && result.assets[0].uri) {
+        const uri = result.assets[0].uri;
+        setAvatarUri(uri);
+        updateAvatar(uri);
+      }
+    } catch (err: any) {
+      console.error("Camera error:", err);
+      Alert.alert("Camera Error", err?.message || "Could not launch camera.");
+    }
+  };
+
+  const handleLaunchImageLibrary = async () => {
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert("Permission Required", "Photo library access is needed to choose a photo.");
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.85,
+      });
+      if (!result.canceled && result.assets && result.assets.length > 0 && result.assets[0].uri) {
+        const uri = result.assets[0].uri;
+        setAvatarUri(uri);
+        updateAvatar(uri);
+      }
+    } catch (err: any) {
+      console.error("Library error:", err);
+      Alert.alert("Library Error", err?.message || "Could not open photo library.");
+    }
+  };
 
   const handleLogout = () => {
     Alert.alert(
@@ -54,14 +130,14 @@ export const ProfileScreen: React.FC = () => {
     {
       title: "ACCOUNT",
       items: [
-        { id: "personal", label: "Personal information", icon: "user" },
+        { id: "personal", label: "Personal information", icon: "user-circle" },
         { id: "security", label: "Password & security", icon: "lock" },
       ],
     },
     {
       title: "PREFERENCES",
       items: [
-        { id: "notifications", label: "Notifications", icon: "bell-fill" },
+        { id: "notifications", label: "Notifications", icon: "bell" },
         { id: "appearance", label: "Appearance", icon: "moon" },
       ],
     },
@@ -94,21 +170,26 @@ export const ProfileScreen: React.FC = () => {
 
         {/* User Avatar & Name */}
         <View style={styles.profileHeader}>
-          <View style={styles.avatarWrapper}>
-            <IOSGlassCircle size={100} strokeWidth={1.8} fill="#18191E">
-              {profile?.avatarUrl ? (
-                <Image source={{ uri: profile.avatarUrl }} style={styles.avatarImage} />
-              ) : (
-                <Image
-                  source={require("../../assets/images/user-avatar.png")}
-                  style={styles.avatarImage}
-                  resizeMode="cover"
-                />
-              )}
-            </IOSGlassCircle>
-            {/* Camera Badge with iOS specular button styling */}
-            <TouchableOpacity style={styles.cameraBadge} activeOpacity={0.8}>
-              <Icon name="camera" size={13} color="#0A0D02" strokeWidth={2.4} />
+          <View style={styles.avatarContainer}>
+            <Image
+              source={
+                avatarUri
+                  ? { uri: avatarUri }
+                  : profile?.avatarUrl
+                  ? { uri: profile.avatarUrl }
+                  : DEMO_AVATAR
+              }
+              style={styles.avatarImage}
+              resizeMode="cover"
+            />
+            {/* Responsive Camera Badge */}
+            <TouchableOpacity
+              style={styles.cameraBadge}
+              activeOpacity={0.8}
+              onPress={handleCameraBadgePress}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Icon name="camera" size={13} color="#000000" strokeWidth={2.2} />
             </TouchableOpacity>
           </View>
 
@@ -120,12 +201,10 @@ export const ProfileScreen: React.FC = () => {
               <Text style={styles.statNumber}>248</Text>
               <Text style={styles.statLabel}>Memories</Text>
             </View>
-            <View style={styles.statDivider} />
             <View style={styles.statCol}>
               <Text style={styles.statNumber}>18</Text>
               <Text style={styles.statLabel}>Categories</Text>
             </View>
-            <View style={styles.statDivider} />
             <View style={styles.statCol}>
               <Text style={styles.statNumber}>42</Text>
               <Text style={styles.statLabel}>This Week</Text>
@@ -139,36 +218,32 @@ export const ProfileScreen: React.FC = () => {
             <Text style={styles.sectionHeaderTitle}>{section.title}</Text>
             <View style={styles.sectionCard}>
               {section.items.map((item, index) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={[
-                    styles.settingItemRow,
-                    index !== section.items.length - 1 && styles.settingItemBorder,
-                  ]}
-                  activeOpacity={0.7}
-                  onPress={item.onPress || (() => {})}
-                >
-                  <View style={styles.settingItemLeft}>
-                    {/* iOS Glass Circle around each icon */}
-                    <IOSGlassCircle size={36} strokeWidth={1.2} fill="rgba(30, 33, 40, 0.9)">
+                <View key={item.id}>
+                  <TouchableOpacity
+                    style={styles.settingItemRow}
+                    activeOpacity={0.7}
+                    onPress={item.onPress || (() => {})}
+                  >
+                    <View style={styles.settingItemLeft}>
                       <Icon
                         name={item.icon}
-                        size={17}
-                        color="#E5E7EB"
-                        strokeWidth={2}
+                        size={19}
+                        color="#A1A1AA"
+                        strokeWidth={1.8}
                       />
-                    </IOSGlassCircle>
-                    <Text style={styles.settingItemLabel}>{item.label}</Text>
-                  </View>
-                  <IOSGlassButton size={28} onPress={item.onPress}>
+                      <Text style={styles.settingItemLabel}>{item.label}</Text>
+                    </View>
                     <Icon
                       name="chevron-right"
                       size={13}
-                      color="#8E8E93"
-                      strokeWidth={2.4}
+                      color="#71717A"
+                      strokeWidth={2}
                     />
-                  </IOSGlassButton>
-                </TouchableOpacity>
+                  </TouchableOpacity>
+                  {index < section.items.length - 1 && (
+                    <View style={styles.rowDivider} />
+                  )}
+                </View>
               ))}
             </View>
           </View>
@@ -204,147 +279,136 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingTop: 12,
+    paddingBottom: 40,
   },
   screenTitle: {
-    fontSize: 28,
-    fontWeight: "700",
+    fontSize: 26,
+    fontWeight: "600",
     color: "#FFFFFF",
-    marginBottom: 20,
+    marginBottom: 26,
+    letterSpacing: 0.2,
   },
   profileHeader: {
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 20,
   },
-  avatarWrapper: {
+  avatarContainer: {
     position: "relative",
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 14,
-    justifyContent: "center",
-    alignItems: "center",
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    marginBottom: 12,
   },
   avatarImage: {
-    width: 92,
-    height: 92,
-    borderRadius: 46,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
   },
   cameraBadge: {
     position: "absolute",
     bottom: 0,
     right: 0,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: "#D4F82C",
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: "#C6F432",
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 2,
     borderColor: "#000000",
   },
   profileName: {
-    fontSize: 21,
-    fontWeight: "700",
+    fontSize: 22,
+    fontWeight: "600",
     color: "#FFFFFF",
-    marginBottom: 18,
+    marginBottom: 24,
+    letterSpacing: 0.2,
   },
   statsRow: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-around",
     width: "100%",
-    backgroundColor: "#14161C",
-    borderRadius: 20,
-    paddingVertical: 14,
     paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.08)",
+    marginBottom: 10,
   },
   statCol: {
     alignItems: "center",
-    flex: 1,
-  },
-  statDivider: {
-    width: 1,
-    height: 28,
-    backgroundColor: "rgba(255, 255, 255, 0.08)",
+    minWidth: 80,
   },
   statNumber: {
-    fontSize: 19,
+    fontSize: 18,
     fontWeight: "700",
     color: "#FFFFFF",
     marginBottom: 4,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 13,
     color: "#8E8E93",
+    fontWeight: "400",
   },
   sectionContainer: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   sectionHeaderTitle: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: "600",
     color: "#8E8E93",
+    letterSpacing: 0.6,
     marginBottom: 8,
     marginLeft: 4,
-    letterSpacing: 0.6,
   },
   sectionCard: {
-    backgroundColor: "#14161C",
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.08)",
+    backgroundColor: "#1C1C1E",
+    borderRadius: 16,
     overflow: "hidden",
   },
   settingItemRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 13,
+    paddingVertical: 14,
     paddingHorizontal: 16,
-  },
-  settingItemBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255, 255, 255, 0.06)",
   },
   settingItemLeft: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 14,
   },
   settingItemLabel: {
     fontSize: 15,
-    fontWeight: "500",
-    color: "#FFFFFF",
-    marginLeft: 12,
+    fontWeight: "400",
+    color: "#D1D5DB",
+    letterSpacing: 0.1,
+  },
+  rowDivider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: "#2C2C2E",
+    marginLeft: 49,
   },
   footerSection: {
+    marginTop: 26,
     alignItems: "center",
-    marginTop: 10,
-    marginBottom: 20,
   },
   versionText: {
-    fontSize: 12,
-    color: "#8E8E93",
+    fontSize: 13,
+    color: "#71717A",
     marginBottom: 14,
   },
   logoutButton: {
     width: "100%",
-    height: 52,
-    backgroundColor: "rgba(239, 68, 68, 0.12)",
-    borderRadius: 26,
-    justifyContent: "center",
+    backgroundColor: "#2E0A0E",
+    borderRadius: 16,
+    paddingVertical: 14,
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: "rgba(239, 68, 68, 0.3)",
+    justifyContent: "center",
   },
   logoutButtonText: {
-    color: "#F87171",
     fontSize: 15,
     fontWeight: "600",
+    color: "#E57373",
   },
   bottomSpacer: {
-    height: 100,
+    height: 60,
   },
 });
