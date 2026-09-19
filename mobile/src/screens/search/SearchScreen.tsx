@@ -729,8 +729,6 @@ export const SearchScreen: React.FC<{ navigation?: any }> = ({ navigation }) => 
               name={item.name}
               count={item.count}
               icon={item.icon}
-              isFavorite={favoriteCategoryIds.includes(item.id)}
-              onToggleFavorite={() => handleToggleFavorite(item.id)}
               onPress={() =>
                 navigation?.navigate("CategoryMemories", {
                   categoryId: item.id,

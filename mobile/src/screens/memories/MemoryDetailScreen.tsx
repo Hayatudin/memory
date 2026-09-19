@@ -786,7 +786,18 @@ export const MemoryDetailScreen = ({ route, navigation }: any) => {
           ) : null}
 
           {/* 3. AI Insights Section */}
-          <View style={styles.aiInsightsCard}>
+          <TouchableOpacity
+            style={styles.aiInsightsCard}
+            activeOpacity={0.85}
+            onPress={() =>
+              navigation.navigate("MainTabs", {
+                screen: "AI",
+                params: {
+                  initialQuery: aiInsightsText || memory.title || "Tell me more about this memory",
+                },
+              })
+            }
+          >
             <View style={styles.aiInsightsHeader}>
               <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
                 <Path
@@ -801,7 +812,7 @@ export const MemoryDetailScreen = ({ route, navigation }: any) => {
               <Text style={styles.aiInsightsTitle}>AI Insights</Text>
             </View>
             <Text style={styles.aiInsightsBody}>{aiInsightsText}</Text>
-          </View>
+          </TouchableOpacity>
 
           {/* Spacer for bottom showcase capsule */}
           <View style={{ height: 100 }} />

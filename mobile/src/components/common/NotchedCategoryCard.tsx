@@ -15,8 +15,6 @@ interface NotchedCategoryCardProps {
   name: string;
   count?: number;
   icon: IconName;
-  isFavorite?: boolean;
-  onToggleFavorite?: () => void;
   onPress?: () => void;
 }
 
@@ -25,8 +23,6 @@ export const NotchedCategoryCard: React.FC<NotchedCategoryCardProps> = ({
   name,
   count = 0,
   icon,
-  isFavorite = false,
-  onToggleFavorite,
   onPress,
 }) => {
   const windowWidth = Dimensions.get("window").width || 390;
@@ -111,49 +107,24 @@ export const NotchedCategoryCard: React.FC<NotchedCategoryCardProps> = ({
       {/* Card Content Overlay */}
       <View style={styles.cardContent}>
         {/* Top row with category icon and optional favorite star */}
-        <View style={styles.cardTopRow}>
-          {/* Layered Double Card Icon */}
-          <View style={styles.iconWrapper}>
-            {/* Back Lime Card */}
-            <View style={styles.iconBackCard} />
+        {/* Layered Double Card Icon */}
+        <View style={styles.iconWrapper}>
+          {/* Back Lime Card */}
+          <View style={styles.iconBackCard} />
 
-            {/* Front Gradient Card */}
-            <View style={styles.iconFrontCard}>
-              <Svg width={44} height={44} style={StyleSheet.absoluteFill}>
-                <Defs>
-                  <LinearGradient id={iconGradId} x1="0%" y1="0%" x2="0%" y2="100%">
-                    <Stop offset="0%" stopColor="#A3E635" />
-                    <Stop offset="100%" stopColor="#4D7C0F" />
-                  </LinearGradient>
-                </Defs>
-                <Rect width={44} height={44} rx={11} fill={`url(#${iconGradId})`} />
-              </Svg>
-              <Icon name={icon} size={22} color="#FFFFFF" strokeWidth={2.2} />
-            </View>
+          {/* Front Gradient Card */}
+          <View style={styles.iconFrontCard}>
+            <Svg width={44} height={44} style={StyleSheet.absoluteFill}>
+              <Defs>
+                <LinearGradient id={iconGradId} x1="0%" y1="0%" x2="0%" y2="100%">
+                  <Stop offset="0%" stopColor="#A3E635" />
+                  <Stop offset="100%" stopColor="#4D7C0F" />
+                </LinearGradient>
+              </Defs>
+              <Rect width={44} height={44} rx={11} fill={`url(#${iconGradId})`} />
+            </Svg>
+            <Icon name={icon} size={22} color="#FFFFFF" strokeWidth={2.2} />
           </View>
-
-          {/* Favorite Star Button */}
-          {onToggleFavorite && (
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={(e) => {
-                e.stopPropagation?.();
-                onToggleFavorite();
-              }}
-              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              style={[
-                styles.favoriteStarBtn,
-                isFavorite && styles.favoriteStarBtnActive,
-              ]}
-            >
-              <Icon
-                name={isFavorite ? "star-fill" : "star"}
-                size={16}
-                color={isFavorite ? "#000000" : "#8E8E93"}
-                strokeWidth={2}
-              />
-            </TouchableOpacity>
-          )}
         </View>
 
         {/* Title */}

@@ -46,10 +46,17 @@ interface ChatMessage {
 
 interface AIAssistantScreenProps {
   navigation: any;
+  route?: any;
 }
 
-export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({ navigation }) => {
+export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({ navigation, route }) => {
   const [prompt, setPrompt] = useState("");
+
+  useEffect(() => {
+    if (route?.params?.initialQuery) {
+      setPrompt(route.params.initialQuery);
+    }
+  }, [route?.params?.initialQuery]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isThinking, setIsThinking] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
@@ -1454,7 +1461,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
     paddingTop: 10,
-    paddingBottom: Platform.OS === "ios" ? 14 : 18,
+    paddingBottom: Platform.OS === "ios" ? 104 : 96,
     gap: 12,
   },
   inputCapsuleWrapper: {

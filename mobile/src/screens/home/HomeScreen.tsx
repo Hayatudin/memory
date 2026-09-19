@@ -366,7 +366,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           <TouchableOpacity
             style={styles.askAiBtn}
             activeOpacity={0.85}
-            onPress={() => navigation.navigate("AIAssistant")}
+            onPress={() => navigation.navigate("MainTabs", { screen: "AI" })}
             onLayout={(e) => setAskAiWidth(e.nativeEvent.layout.width)}
           >
             {askAiWidth > 0 && (
@@ -416,7 +416,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         </View>
 
         <View style={styles.memoriesList}>
-          {activeMemories.map((item) => {
+          {activeMemories.slice(0, 3).map((item) => {
             const isPinned = pinnedIds.includes(item.id);
             return (
               <TouchableOpacity
@@ -590,7 +590,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         <TouchableOpacity
           style={styles.insightCardWrapper}
           activeOpacity={0.88}
-          onPress={() => navigation.navigate("AIAssistant")}
+          onPress={() =>
+            navigation.navigate("MainTabs", {
+              screen: "AI",
+              params: {
+                initialQuery: "You have 5 ideas on marketing saved. Want a summary?",
+              },
+            })
+          }
         >
           <ImageBackground
             source={require("../../assets/images/ai-insight-bg.png")}

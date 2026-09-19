@@ -31,64 +31,75 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
     <View style={styles.container} pointerEvents="box-none">
       {/* Main Floating Pill Bar */}
       <View style={styles.pillBar}>
-        {state.routes.map((route, index) => {
-          const { options } = descriptors[route.key];
-          const isFocused = state.index === index;
-          const iconName = getTabIcon(route.name);
+        {state.routes
+          .filter((route) => route.name !== "AI")
+          .map((route) => {
+            const index = state.routes.findIndex((r) => r.key === route.key);
+            const { options } = descriptors[route.key];
+            const isFocused = state.index === index;
+            const iconName = getTabIcon(route.name);
 
-          const onPress = () => {
-            const event = navigation.emit({
-              type: "tabPress",
-              target: route.key,
-              canPreventDefault: true,
-            });
+            const onPress = () => {
+              const event = navigation.emit({
+                type: "tabPress",
+                target: route.key,
+                canPreventDefault: true,
+              });
 
-            if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name);
-            }
-          };
+              if (!isFocused && !event.defaultPrevented) {
+                navigation.navigate(route.name);
+              }
+            };
 
-          return (
-            <TouchableOpacity
-              key={route.key}
-              accessibilityRole="button"
-              accessibilityState={isFocused ? { selected: true } : {}}
-              accessibilityLabel={options.tabBarAccessibilityLabel}
-              testID={options.tabBarButtonTestID}
-              onPress={onPress}
-              activeOpacity={0.8}
-              style={styles.tabItem}
-            >
-              {isFocused ? (
-                <View style={styles.activePillBadge}>
-                  <Icon name={iconName} size={22} color={Theme.colors.black} strokeWidth={2.4} />
-                </View>
-              ) : (
-                <View style={styles.inactiveTabIcon}>
-                  <Icon name={iconName} size={22} color={Theme.colors.textSecondary} strokeWidth={1.8} />
-                </View>
-              )}
-            </TouchableOpacity>
-          );
-        })}
+            return (
+              <TouchableOpacity
+                key={route.key}
+                accessibilityRole="button"
+                accessibilityState={isFocused ? { selected: true } : {}}
+                accessibilityLabel={options.tabBarAccessibilityLabel}
+                testID={options.tabBarButtonTestID}
+                onPress={onPress}
+                activeOpacity={0.8}
+                style={styles.tabItem}
+              >
+                {isFocused ? (
+                  <View style={styles.activePillBadge}>
+                    <Icon name={iconName} size={22} color={Theme.colors.black} strokeWidth={2.4} />
+                  </View>
+                ) : (
+                  <View style={styles.inactiveTabIcon}>
+                    <Icon name={iconName} size={22} color={Theme.colors.textSecondary} strokeWidth={1.8} />
+                  </View>
+                )}
+              </TouchableOpacity>
+            );
+          })}
       </View>
 
       {/* Floating Action Button (AI Sparkles) */}
-      <TouchableOpacity
-        activeOpacity={0.85}
-        onPress={() => {
-          if (onAIPress) {
-            onAIPress();
-          } else {
-            navigation.navigate("AIAssistant");
-          }
-        }}
-        style={styles.fabOuterGlow}
-      >
-        <View style={styles.fabInnerCircle}>
-          <Icon name="sparkles" size={24} color={Theme.colors.textOnPrimary} />
-        </View>
-      </TouchableOpacity>
+      {(() => {
+        const isAIFocused = state.routes[state.index]?.name === "AI";
+        return (
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => {
+              if (onAIPress) {
+                onAIPress();
+              } else {
+                navigation.navigate("AI");
+              }
+            }}
+            style={[
+              styles.fabOuterGlow,
+              isAIFocused && styles.fabOuterGlowActive,
+            ]}
+          >
+            <View style={styles.fabInnerCircle}>
+              <Icon name="sparkles" size={24} color={Theme.colors.textOnPrimary} />
+            </View>
+          </TouchableOpacity>
+        );
+      })()}
     </View>
   );
 };
@@ -158,6 +169,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 14,
     elevation: 8,
+  },
+  fabOuterGlowActive: {
+    backgroundColor: "rgba(212, 248, 44, 0.45)",
+    borderWidth: 2,
+    borderColor: "rgba(212, 248, 44, 0.9)",
   },
   fabInnerCircle: {
     width: 56,

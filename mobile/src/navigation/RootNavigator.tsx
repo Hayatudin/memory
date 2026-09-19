@@ -114,6 +114,7 @@ function MainTabNavigatorAndroid() {
     >
       <AndroidTab.Screen name="Home" component={HomeScreen} />
       <AndroidTab.Screen name="Search" component={SearchScreen} />
+      <AndroidTab.Screen name="AI" component={AIAssistantScreen} />
       <AndroidTab.Screen name="Profile" component={ProfileScreen} />
     </AndroidTab.Navigator>
   );
