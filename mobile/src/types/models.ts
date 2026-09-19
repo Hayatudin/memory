@@ -6,13 +6,36 @@ export interface User {
   createdAt: string;
 }
 
+export type MemoryType = "text" | "image" | "link" | "voice";
+
 export type MemorySourceType =
   | "note"
   | "web"
   | "image"
   | "document"
   | "audio"
-  | "other";
+  | "other"
+  | MemoryType;
+
+export interface Category {
+  id: string;
+  userId: string;
+  name: string;
+  slug: string;
+  icon?: string | null;
+  color?: string | null;
+  description?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LinkPreviewData {
+  url: string;
+  title: string;
+  description: string;
+  image: string | null;
+  siteName: string;
+}
 
 export interface MemoryAsset {
   id: string;
@@ -34,10 +57,17 @@ export interface Tag {
 export interface Memory {
   id: string;
   userId: string;
+  categoryId?: string | null;
+  categoryName?: string | null;
+  categoryIcon?: string | null;
+  categoryColor?: string | null;
   title: string;
   content?: string | null;
-  sourceUrl?: string | null;
+  type: MemoryType;
   sourceType: MemorySourceType;
+  sourceUrl?: string | null;
+  mediaUrl?: string | null;
+  mediaMetadata?: any | null;
   isFavorite: boolean;
   isArchived: boolean;
   metadata?: Record<string, any> | null;

@@ -30,7 +30,7 @@ interface SettingSection {
   items: SettingItem[];
 }
 
-export const ProfileScreen: React.FC = () => {
+export const ProfileScreen: React.FC<{ navigation?: any }> = ({ navigation }) => {
   const { user, profile, logout, isSubmitting, updateAvatar } = useAuthStore();
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
 
@@ -109,27 +109,28 @@ export const ProfileScreen: React.FC = () => {
     }
   };
 
-  const handleLogout = () => {
-    Alert.alert(
-      "Log Out",
-      "Are you sure you want to log out of your account?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Log Out",
-          style: "destructive",
-          onPress: async () => {
-            await logout();
-          },
-        },
-      ]
-    );
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigation?.reset({
+        index: 0,
+        routes: [{ name: "Onboarding" }],
+      });
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
   };
 
   const SECTIONS: SettingSection[] = [
     {
       title: "ACCOUNT",
       items: [
+        {
+          id: "subscription",
+          label: "Memory Premium",
+          icon: "diamond",
+          onPress: () => navigation?.navigate("Subscription"),
+        },
         { id: "personal", label: "Personal information", icon: "user-circle" },
         { id: "security", label: "Password & security", icon: "lock" },
       ],

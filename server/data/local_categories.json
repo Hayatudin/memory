@@ -1,0 +1,84 @@
+[
+  {
+    "id": "cat-entertainment-000001",
+    "userId": "usr-orhan-default",
+    "name": "Entertainment",
+    "slug": "entertainment",
+    "icon": "video",
+    "color": "#FF5C5C",
+    "createdAt": "2026-09-19T00:00:00.000Z",
+    "updatedAt": "2026-09-19T00:00:00.000Z"
+  },
+  {
+    "id": "cat-ideas-000002",
+    "userId": "usr-orhan-default",
+    "name": "Ideas",
+    "slug": "ideas",
+    "icon": "lightbulb",
+    "color": "#FFD028",
+    "createdAt": "2026-09-19T00:00:00.000Z",
+    "updatedAt": "2026-09-19T00:00:00.000Z"
+  },
+  {
+    "id": "cat-music-000003",
+    "userId": "usr-orhan-default",
+    "name": "Music",
+    "slug": "music",
+    "icon": "music",
+    "color": "#A855F7",
+    "createdAt": "2026-09-19T00:00:00.000Z",
+    "updatedAt": "2026-09-19T00:00:00.000Z"
+  },
+  {
+    "id": "cat-tech-000004",
+    "userId": "usr-orhan-default",
+    "name": "Tech",
+    "slug": "tech",
+    "icon": "tech",
+    "color": "#3B82F6",
+    "createdAt": "2026-09-19T00:00:00.000Z",
+    "updatedAt": "2026-09-19T00:00:00.000Z"
+  },
+  {
+    "id": "cat-books-000005",
+    "userId": "usr-orhan-default",
+    "name": "Anime",
+    "slug": "anime",
+    "icon": "book",
+    "color": "#10B981",
+    "createdAt": "2026-09-19T00:00:00.000Z",
+    "updatedAt": "2026-09-19T01:18:00.248Z"
+  },
+  {
+    "id": "cat-resources-000006",
+    "userId": "usr-orhan-default",
+    "name": "Resources",
+    "slug": "resources",
+    "icon": "link",
+    "color": "#6366F1",
+    "createdAt": "2026-09-19T00:00:00.000Z",
+    "updatedAt": "2026-09-19T00:00:00.000Z"
+  },
+  {
+    "id": "cat-websites-5bc10704",
+    "userId": "usr-orhan-default",
+    "name": "Websites",
+    "slug": "websites",
+    "icon": "tech",
+    "color": "#8AE026",
+    "description": null,
+    "createdAt": "2026-09-19T00:49:39.290Z",
+    "updatedAt": "2026-09-19T00:49:39.290Z"
+  },
+  {
+    "id": "cat-bemory-970a47ff",
+    "userId": "usr-orhan-default",
+    "name": "Bemory",
+    "slug": "bemory",
+    "icon": "folder",
+    "color": "#8AE026",
+    "description": null,
+    "createdAt": "2026-09-19T01:22:24.246Z",
+    "updatedAt": "2026-09-19T01:22:24.246Z"
+  }
+]

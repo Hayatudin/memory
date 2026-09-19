@@ -329,30 +329,14 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({ navigation
       // Safe dynamic check for native audio modules so app never crashes if missing
       try {
         const { requireOptionalNativeModule } = require("expo-modules-core");
-        if (requireOptionalNativeModule("ExponentAV")) {
-          const { Audio } = require("expo-av");
-          const permission = await Audio.requestPermissionsAsync();
-          if (permission.granted) {
-            await Audio.setAudioModeAsync({
-              allowsRecordingIOS: true,
-              playsInSilentModeIOS: true,
-            });
-
-            if (recordingRef.current) {
-              try {
-                await recordingRef.current.stopAndUnloadAsync();
-              } catch {}
-              recordingRef.current = null;
-            }
-
-            const newRecording = new Audio.Recording();
-            await newRecording.prepareToRecordAsync({
-              ...Audio.RecordingOptionsPresets.HIGH_QUALITY,
-              isMeteringEnabled: true,
-            });
-            await newRecording.startAsync();
-            recordingRef.current = newRecording;
-          }
+        if (requireOptionalNativeModule("ExpoAudio")) {
+          const { setAudioModeAsync, RecordingPresets } = require("expo-audio");
+          const AudioModule = require("expo-audio").AudioModule;
+          await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
+          const newRecording = new AudioModule.AudioRecorder(RecordingPresets.HIGH_QUALITY);
+          await newRecording.prepareToRecordAsync();
+          newRecording.record();
+          recordingRef.current = newRecording;
         }
       } catch (nativeErr) {
         console.log("Native audio recorder unavailable, using acoustic frequency pipeline:", nativeErr);
@@ -372,7 +356,11 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({ navigation
     setWaveHeights(RESTING_WAVES);
     if (recordingRef.current) {
       try {
-        await recordingRef.current.stopAndUnloadAsync();
+        if (typeof recordingRef.current.stop === "function") {
+          await recordingRef.current.stop();
+        } else if (typeof recordingRef.current.stopAndUnloadAsync === "function") {
+          await recordingRef.current.stopAndUnloadAsync();
+        }
       } catch {}
       recordingRef.current = null;
     }
@@ -387,8 +375,13 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({ navigation
     let recordedUri: string | null = null;
     if (recordingRef.current) {
       try {
-        await recordingRef.current.stopAndUnloadAsync();
-        recordedUri = recordingRef.current.getURI();
+        if (typeof recordingRef.current.stop === "function") {
+          await recordingRef.current.stop();
+          recordedUri = recordingRef.current.uri;
+        } else if (typeof recordingRef.current.stopAndUnloadAsync === "function") {
+          await recordingRef.current.stopAndUnloadAsync();
+          recordedUri = recordingRef.current.getURI();
+        }
       } catch (err) {
         console.error("Error stopping native recording:", err);
       }

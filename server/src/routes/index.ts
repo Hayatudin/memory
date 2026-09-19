@@ -2,6 +2,10 @@ import { Router, Request, Response } from "express";
 import { requireAuth } from "../middleware/auth.js";
 import { checkDatabaseConnection } from "../db/index.js";
 import { UserController } from "../modules/user/user.controller.js";
+import { categoriesRouter } from "../modules/categories/categories.routes.js";
+import { memoriesRouter } from "../modules/memories/memories.routes.js";
+import { searchRouter } from "../modules/search/search.routes.js";
+import { storageRouter } from "../modules/storage/storage.routes.js";
 import { aiRouter } from "./ai.routes.js";
 
 const router = Router();
@@ -38,6 +42,14 @@ router.get("/health", async (_req: Request, res: Response) => {
  * Authenticated Current User & Profile Endpoint
  */
 router.get("/me", requireAuth, UserController.getMe);
+
+/**
+ * Application Modules
+ */
+router.use("/categories", categoriesRouter);
+router.use("/memories", memoriesRouter);
+router.use("/search", searchRouter);
+router.use("/storage", storageRouter);
 
 /**
  * AI & Speech Transcription Routes

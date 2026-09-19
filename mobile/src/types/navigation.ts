@@ -1,4 +1,7 @@
 export type RootStackParamList = {
+  Onboarding: undefined;
+  Subscription: undefined;
+  Payment: { plan: "monthly" | "yearly"; price: string };
   Auth: undefined;
   Main: undefined;
 };

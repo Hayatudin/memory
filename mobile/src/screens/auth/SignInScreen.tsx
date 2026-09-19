@@ -71,7 +71,13 @@ export const SignInScreen: React.FC<SignInScreenProps> = ({ navigation }) => {
     const e = validate();
     if (Object.keys(e).length > 0) { setErrors(e); return; }
     setErrors({});
-    await login({ email: email.trim(), password });
+    const success = await login({ email: email.trim(), password });
+    if (success) {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "MainTabs" }],
+      });
+    }
   };
 
   return (

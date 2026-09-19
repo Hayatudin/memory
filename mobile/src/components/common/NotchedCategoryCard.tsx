@@ -15,6 +15,8 @@ interface NotchedCategoryCardProps {
   name: string;
   count?: number;
   icon: IconName;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
   onPress?: () => void;
 }
 
@@ -23,6 +25,8 @@ export const NotchedCategoryCard: React.FC<NotchedCategoryCardProps> = ({
   name,
   count = 0,
   icon,
+  isFavorite = false,
+  onToggleFavorite,
   onPress,
 }) => {
   const windowWidth = Dimensions.get("window").width || 390;
@@ -106,24 +110,50 @@ export const NotchedCategoryCard: React.FC<NotchedCategoryCardProps> = ({
 
       {/* Card Content Overlay */}
       <View style={styles.cardContent}>
-        {/* Layered Double Card Icon */}
-        <View style={styles.iconWrapper}>
-          {/* Back Lime Card */}
-          <View style={styles.iconBackCard} />
+        {/* Top row with category icon and optional favorite star */}
+        <View style={styles.cardTopRow}>
+          {/* Layered Double Card Icon */}
+          <View style={styles.iconWrapper}>
+            {/* Back Lime Card */}
+            <View style={styles.iconBackCard} />
 
-          {/* Front Gradient Card */}
-          <View style={styles.iconFrontCard}>
-            <Svg width={44} height={44} style={StyleSheet.absoluteFill}>
-              <Defs>
-                <LinearGradient id={iconGradId} x1="0%" y1="0%" x2="0%" y2="100%">
-                  <Stop offset="0%" stopColor="#A3E635" />
-                  <Stop offset="100%" stopColor="#4D7C0F" />
-                </LinearGradient>
-              </Defs>
-              <Rect width={44} height={44} rx={11} fill={`url(#${iconGradId})`} />
-            </Svg>
-            <Icon name={icon} size={22} color="#FFFFFF" strokeWidth={2.2} />
+            {/* Front Gradient Card */}
+            <View style={styles.iconFrontCard}>
+              <Svg width={44} height={44} style={StyleSheet.absoluteFill}>
+                <Defs>
+                  <LinearGradient id={iconGradId} x1="0%" y1="0%" x2="0%" y2="100%">
+                    <Stop offset="0%" stopColor="#A3E635" />
+                    <Stop offset="100%" stopColor="#4D7C0F" />
+                  </LinearGradient>
+                </Defs>
+                <Rect width={44} height={44} rx={11} fill={`url(#${iconGradId})`} />
+              </Svg>
+              <Icon name={icon} size={22} color="#FFFFFF" strokeWidth={2.2} />
+            </View>
           </View>
+
+          {/* Favorite Star Button */}
+          {onToggleFavorite && (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={(e) => {
+                e.stopPropagation?.();
+                onToggleFavorite();
+              }}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              style={[
+                styles.favoriteStarBtn,
+                isFavorite && styles.favoriteStarBtnActive,
+              ]}
+            >
+              <Icon
+                name={isFavorite ? "star-fill" : "star"}
+                size={16}
+                color={isFavorite ? "#000000" : "#8E8E93"}
+                strokeWidth={2}
+              />
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Title */}
@@ -158,6 +188,31 @@ const styles = StyleSheet.create({
     paddingLeft: 18,
     paddingRight: 14,
     paddingBottom: 16,
+  },
+  cardTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    width: "100%",
+  },
+  favoriteStarBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.14)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  favoriteStarBtnActive: {
+    backgroundColor: "#D4F82C",
+    borderColor: "#D4F82C",
+    shadowColor: "#D4F82C",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 3,
   },
   iconWrapper: {
     width: 50,

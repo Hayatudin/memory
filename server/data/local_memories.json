@@ -1,0 +1,89 @@
+[
+  {
+    "id": "627cfe4f-1ec3-4dce-9d99-cbe835fb5ae1",
+    "userId": "usr-orhan-default",
+    "categoryId": "cat-music-000003",
+    "categoryName": "Music",
+    "categoryIcon": "music",
+    "categoryColor": "#A855F7",
+    "title": "Content Idea for Bemory",
+    "content": "Displaying When did insta get this update and sharing to Bemory AI\n● UGC is the great",
+    "type": "image",
+    "sourceUrl": null,
+    "mediaUrl": "file:///var/mobile/Containers/Data/Application/4025339B-8337-42DD-8BE7-586528266153/Library/Caches/ImagePicker/11250EF5-CA0F-4D41-9206-D9F56423A1F9.png",
+    "mediaMetadata": {
+      "isBold": false,
+      "isUnderline": false,
+      "isLarge": false,
+      "aiInsights": "The visual content reinforces the key takeaways: Displaying When did insta get this update and sharing to Bemory AI."
+    },
+    "isFavorite": false,
+    "isArchived": false,
+    "metadata": {
+      "aiInsights": "The visual content reinforces the key takeaways: Displaying When did insta get this update and sharing to Bemory AI."
+    },
+    "createdAt": "2026-09-19T02:13:33.125Z",
+    "updatedAt": "2026-09-19T10:04:35.881Z"
+  },
+  {
+    "id": "68f85eaf-19e9-4e4b-b75a-0a1eaa3c03bc",
+    "userId": "usr-orhan-default",
+    "categoryId": "cat-ideas-000002",
+    "categoryName": "Ideas",
+    "categoryIcon": "lightbulb",
+    "categoryColor": "#FFD028",
+    "title": "Fast Image Memory Test",
+    "content": null,
+    "type": "image",
+    "sourceUrl": null,
+    "mediaUrl": "https://res.cloudinary.com/zynit5sq/image/upload/v1789783292/memory_app/uploads/fbzsnqylavc101q9ttuf.gif",
+    "mediaMetadata": null,
+    "isFavorite": false,
+    "isArchived": false,
+    "metadata": null,
+    "createdAt": "2026-09-19T02:07:41.281Z",
+    "updatedAt": "2026-09-19T02:07:41.281Z"
+  },
+  {
+    "id": "2718007b-5d65-49a5-ab7c-b6907e3a9d5b",
+    "userId": "usr-orhan-default",
+    "categoryId": "cat-ideas-000002",
+    "categoryName": "Ideas",
+    "categoryIcon": "lightbulb",
+    "categoryColor": "#FFD028",
+    "title": "Test memory",
+    "content": null,
+    "type": "image",
+    "sourceUrl": null,
+    "mediaUrl": null,
+    "mediaMetadata": null,
+    "isFavorite": false,
+    "isArchived": false,
+    "metadata": null,
+    "createdAt": "2026-09-19T02:03:27.150Z",
+    "updatedAt": "2026-09-19T02:03:27.150Z"
+  },
+  {
+    "id": "463079b6-bc88-44a7-b809-13028be3524d",
+    "userId": "usr-orhan-default",
+    "categoryId": "cat-websites-5bc10704",
+    "categoryName": "Websites",
+    "categoryIcon": "tech",
+    "categoryColor": "#8AE026",
+    "title": "Melaverse",
+    "content": "Melaverse website should include this things \n● Lucky lucky\n○ Homepage",
+    "type": "text",
+    "sourceUrl": null,
+    "mediaUrl": null,
+    "mediaMetadata": null,
+    "isFavorite": false,
+    "isArchived": false,
+    "metadata": {
+      "isBold": false,
+      "isUnderline": false,
+      "isLarge": false
+    },
+    "createdAt": "2026-09-19T00:50:26.977Z",
+    "updatedAt": "2026-09-19T00:50:50.011Z"
+  }
+]

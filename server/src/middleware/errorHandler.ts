@@ -7,7 +7,8 @@ export function errorHandler(
   res: Response,
   _next: NextFunction
 ) {
-  const statusCode = err.status || err.statusCode || 500;
+  const rawStatus = Number(err.status || err.statusCode);
+  const statusCode = Number.isInteger(rawStatus) && rawStatus >= 100 && rawStatus <= 599 ? rawStatus : 500;
   const isProd = env.NODE_ENV === "production";
 
   console.error(`[ERROR] ${req.method} ${req.url}:`, err);
@@ -15,7 +16,7 @@ export function errorHandler(
   res.status(statusCode).json({
     success: false,
     error: {
-      code: err.code || "INTERNAL_SERVER_ERROR",
+      code: typeof err.code === "string" ? err.code : "INTERNAL_SERVER_ERROR",
       message: isProd && statusCode === 500 ? "Internal Server Error" : err.message || "An unexpected error occurred",
       ...(isProd ? {} : { stack: err.stack }),
     },

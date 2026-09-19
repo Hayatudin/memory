@@ -19,13 +19,13 @@ function getApiHost(): string {
   } catch {
     // ignore
   }
-  return "http://localhost:4000";
+  return "http://10.178.76.87:4000";
 }
 
 export const API_CONFIG = {
   BASE_URL: getApiHost(),
   API_PREFIX: "/api",
-  TIMEOUT_MS: 15000,
+  TIMEOUT_MS: 5000,
   AUTH_ENDPOINTS: {
     SIGN_UP: "/api/auth/sign-up/email",
     SIGN_IN: "/api/auth/sign-in/email",

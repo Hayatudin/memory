@@ -13,6 +13,7 @@ export default defineConfig({
     user: process.env.DATABASE_USER || "root",
     database: process.env.DATABASE_NAME || "memory_db",
     ...(process.env.DATABASE_PASSWORD ? { password: process.env.DATABASE_PASSWORD } : {}),
+    ...(process.env.DATABASE_SSL === "true" ? { ssl: { rejectUnauthorized: false } } : {}),
   },
   verbose: true,
   strict: true,

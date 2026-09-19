@@ -41,7 +41,24 @@ export type IconName =
   | "trash"
   | "folder"
   | "more-horizontal"
-  | "more-vertical";
+  | "more-vertical"
+  | "grid"
+  | "image"
+  | "document"
+  | "audio-wave"
+  | "tag"
+  | "check"
+  | "credit-card"
+  | "shield-check"
+  | "play"
+  | "pause"
+  | "code"
+  | "alert-triangle"
+  | "star"
+  | "star-fill"
+  | "arrow-down"
+  | "sliders"
+  | "settings";
 
 interface IconProps {
   name: IconName;
@@ -49,6 +66,22 @@ interface IconProps {
   color?: string;
   strokeWidth?: number;
 }
+
+export const detectCategoryIcon = (name?: string | null): IconName => {
+  if (!name) return "folder";
+  const lower = name.toLowerCase().trim();
+  if (lower.includes("video") || lower.includes("movie") || lower.includes("film") || lower.includes("entertain") || lower.includes("clip") || lower.includes("tv")) return "video";
+  if (lower.includes("idea") || lower.includes("think") || lower.includes("strategy") || lower.includes("brain") || lower.includes("mind") || lower.includes("inspire")) return "lightbulb";
+  if (lower.includes("music") || lower.includes("song") || lower.includes("audio") || lower.includes("sound") || lower.includes("beat") || lower.includes("track")) return "music";
+  if (lower.includes("tech") || lower.includes("code") || lower.includes("dev") || lower.includes("software") || lower.includes("web") || lower.includes("app") || lower.includes("program") || lower.includes("ai")) return "tech";
+  if (lower.includes("book") || lower.includes("read") || lower.includes("learn") || lower.includes("study") || lower.includes("paper") || lower.includes("research")) return "book";
+  if (lower.includes("resource") || lower.includes("link") || lower.includes("url") || lower.includes("site")) return "link";
+  if (lower.includes("image") || lower.includes("photo") || lower.includes("pic") || lower.includes("camera") || lower.includes("art") || lower.includes("design")) return "image";
+  if (lower.includes("doc") || lower.includes("note") || lower.includes("file") || lower.includes("text") || lower.includes("write")) return "document";
+  if (lower.includes("voice") || lower.includes("speech") || lower.includes("podcast") || lower.includes("record")) return "audio-wave";
+  if (lower.includes("tag") || lower.includes("label")) return "tag";
+  return "folder";
+};
 
 export const Icon: React.FC<IconProps> = ({
   name,
@@ -628,6 +661,254 @@ export const Icon: React.FC<IconProps> = ({
           <Circle cx="12" cy="12" r="2.2" />
           <Circle cx="12" cy="5" r="2.2" />
           <Circle cx="12" cy="19" r="2.2" />
+        </Svg>
+      );
+
+    case "grid":
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <Rect x="3.5" y="3.5" width="7" height="7" rx="2" stroke={color} strokeWidth={strokeWidth} />
+          <Rect x="13.5" y="3.5" width="7" height="7" rx="2" stroke={color} strokeWidth={strokeWidth} />
+          <Rect x="3.5" y="13.5" width="7" height="7" rx="2" stroke={color} strokeWidth={strokeWidth} />
+          <Rect x="13.5" y="13.5" width="7" height="7" rx="2" stroke={color} strokeWidth={strokeWidth} />
+        </Svg>
+      );
+
+    case "image":
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <Rect x="3" y="3" width="18" height="18" rx="3" stroke={color} strokeWidth={strokeWidth} />
+          <Circle cx="8.5" cy="8.5" r="1.8" fill={color} />
+          <Path
+            d="M21 16l-5.5-5.5a1 1 0 00-1.4 0L4 20"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </Svg>
+      );
+
+    case "document":
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <Path
+            d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <Path
+            d="M14 2v6h6M16 13H8M16 17H8M10 9H8"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </Svg>
+      );
+
+    case "audio-wave":
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <Path
+            d="M4 10v4M8 6v12M12 3v18M16 7v10M20 10v4"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </Svg>
+      );
+
+    case "tag":
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <Path
+            d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <Circle cx="7" cy="7" r="1.5" fill={color} />
+        </Svg>
+      );
+
+    case "check":
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <Path
+            d="M20 6L9 17l-5-5"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </Svg>
+      );
+
+    case "credit-card":
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <Rect
+            x="2"
+            y="5"
+            width="20"
+            height="14"
+            rx="2"
+            stroke={color}
+            strokeWidth={strokeWidth}
+          />
+          <Path d="M2 10h20" stroke={color} strokeWidth={strokeWidth} />
+          <Path d="M6 15h2" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" />
+        </Svg>
+      );
+
+    case "shield-check":
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <Path
+            d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <Path
+            d="M9 12l2 2 4-4"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </Svg>
+      );
+
+    case "play":
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+          <Path d="M8 5v14l11-7z" />
+        </Svg>
+      );
+
+    case "pause":
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+          <Rect x="6" y="4" width="4" height="16" rx="1" />
+          <Rect x="14" y="4" width="4" height="16" rx="1" />
+        </Svg>
+      );
+
+    case "code":
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <Path
+            d="M16 18l6-6-6-6M8 6l-6 6 6 6"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </Svg>
+      );
+
+    case "alert-triangle":
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <Path
+            d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <Path
+            d="M12 9v4M12 17h.01"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+          />
+        </Svg>
+      );
+
+    case "arrow-up":
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <Path
+            d="M12 19V5M5 12l7-7 7 7"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </Svg>
+      );
+
+    case "arrow-down":
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <Path
+            d="M12 5v14M19 12l-7 7-7-7"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </Svg>
+      );
+
+    case "star":
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <Path
+            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </Svg>
+      );
+
+    case "star-fill":
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+          <Path
+            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </Svg>
+      );
+
+    case "sliders":
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <Path
+            d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </Svg>
+      );
+
+    case "settings":
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <Circle cx={12} cy={12} r={3} stroke={color} strokeWidth={strokeWidth} />
+          <Path
+            d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </Svg>
       );
 

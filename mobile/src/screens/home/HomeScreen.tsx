@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -15,8 +15,9 @@ import {
   Share,
 } from "react-native";
 import { useAuthStore } from "../../store/authStore";
+import { useMemoryStore } from "../../store/memoryStore";
 import { Theme } from "../../theme/index";
-import { Icon, IconName } from "../../components/common/Icon";
+import { Icon, IconName, detectCategoryIcon } from "../../components/common/Icon";
 import { IOSGlassButton } from "../../components/common/IOSGlassButton";
 import { IOSGlassCapsule } from "../../components/common/IOSGlassCapsule";
 import { IOSGlassCircle } from "../../components/common/IOSGlassCircle";
@@ -37,10 +38,72 @@ interface HomeScreenProps {
   navigation: any;
 }
 
+const DEFAULT_5_CATEGORY_NAMES = ["Entertainment", "Ideas", "Tech", "Music", "Resources"];
+
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const { user, profile } = useAuthStore();
   const displayName = profile?.displayName || user?.name || "Orhan hy!";
   const avatarSource = profile?.avatarUrl ? { uri: profile.avatarUrl } : DEMO_AVATAR;
+
+  const {
+    memories: storeMemories,
+    categories: storeCategories,
+    favoriteCategoryIds,
+    fetchCategories,
+    fetchMemories,
+    removeMemoryLocally,
+  } = useMemoryStore();
+
+  useEffect(() => {
+    fetchMemories().catch(() => {});
+    fetchCategories().catch(() => {});
+  }, [fetchMemories, fetchCategories]);
+
+  // Compute exactly up to 5 categories: favorited first, then defaults (Entertainment, Ideas, Tech, Music, Resources)
+  const displayCategories = useMemo(() => {
+    const enriched = storeCategories.map((cat) => {
+      const count = storeMemories.filter((m) => {
+        if (m.categoryId && m.categoryId === cat.id) return true;
+        if (m.categoryName && m.categoryName.toLowerCase() === cat.name.toLowerCase()) return true;
+        return false;
+      }).length;
+
+      let icon: IconName = "folder";
+      if (cat.icon) {
+        icon = cat.icon as IconName;
+      } else {
+        icon = detectCategoryIcon(cat.name);
+      }
+
+      return {
+        id: cat.id,
+        name: cat.name,
+        icon,
+        color: cat.color || "#D4F82C",
+        count,
+        isFavorite: favoriteCategoryIds.includes(cat.id),
+      };
+    });
+
+    const favorited = enriched.filter((c) => c.isFavorite);
+    const nonFavorited = enriched.filter((c) => !c.isFavorite);
+
+    // Sort non-favorited according to the default 5 priority
+    nonFavorited.sort((a, b) => {
+      const idxA = DEFAULT_5_CATEGORY_NAMES.findIndex(
+        (n) => n.toLowerCase() === a.name.toLowerCase()
+      );
+      const idxB = DEFAULT_5_CATEGORY_NAMES.findIndex(
+        (n) => n.toLowerCase() === b.name.toLowerCase()
+      );
+      const rankA = idxA !== -1 ? idxA : 999;
+      const rankB = idxB !== -1 ? idxB : 999;
+      return rankA - rankB;
+    });
+
+    // Exactly 5 categories shown
+    return [...favorited, ...nonFavorited].slice(0, 5);
+  }, [storeCategories, storeMemories, favoriteCategoryIds]);
 
   const [memories, setMemories] = useState<MemoryItem[]>([
     {
@@ -67,6 +130,49 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       timestamp: "2 days ago",
     },
   ]);
+
+  const formatTimestamp = (dateStr: string) => {
+    try {
+      const diff = Date.now() - new Date(dateStr).getTime();
+      const mins = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
+      if (mins < 1) return "Just now";
+      if (mins < 60) return `${mins}m ago`;
+      if (hours < 24) return `${hours}h ago`;
+      if (days === 1) return "Yesterday";
+      if (days < 7) return `${days} days ago`;
+      return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    } catch {
+      return "Recently";
+    }
+  };
+
+  const getMemoryIcon = (type?: string): IconName => {
+    if (type === "image") return "camera";
+    if (type === "link") return "link";
+    if (type === "voice") return "audio-wave";
+    return "document";
+  };
+
+  const activeMemories: MemoryItem[] =
+    storeMemories.length > 0
+      ? storeMemories.map((m) => ({
+          id: m.id,
+          title: m.title,
+          subtitle:
+            m.content ||
+            m.sourceUrl ||
+            (m.type === "image"
+              ? "Image Memory"
+              : m.type === "voice"
+              ? "Voice Recording"
+              : "Text Note"),
+          icon: getMemoryIcon(m.type),
+          timestamp: formatTimestamp(m.createdAt),
+          url: m.sourceUrl || undefined,
+        }))
+      : memories;
 
   const [pinnedIds, setPinnedIds] = useState<string[]>([]);
   const [askAiWidth, setAskAiWidth] = useState<number>(0);
@@ -109,8 +215,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         {
           text: "Delete",
           style: "destructive",
-          onPress: () => {
+          onPress: async () => {
             setMemories((prev) => prev.filter((m) => m.id !== id));
+            removeMemoryLocally(id);
+            try {
+              const { MemoriesApi } = await import("../../api/memories.api");
+              await MemoriesApi.delete(id);
+            } catch {
+              // ignore
+            }
           },
         },
       ]
@@ -303,14 +416,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         </View>
 
         <View style={styles.memoriesList}>
-          {memories.map((item) => {
+          {activeMemories.map((item) => {
             const isPinned = pinnedIds.includes(item.id);
             return (
               <TouchableOpacity
                 key={item.id}
                 style={styles.memoryItem}
                 activeOpacity={0.8}
-                onPress={() => handleMemoryMenu(item)}
+                onPress={() =>
+                  navigation.navigate("MemoryDetail", {
+                    memoryId: item.id,
+                    initialData: item,
+                  })
+                }
               >
                 {/* Larger 60px Circular Icon with Specular Glass Rim & Pill Badge */}
                 <View style={styles.memoryIconBadgeCol}>
@@ -397,263 +515,71 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoriesScrollRow}
         >
-          {/* Category Card 1: Entertainment */}
-          <TouchableOpacity
-            activeOpacity={0.88}
-            onPress={() => navigation.navigate("Search")}
-            style={styles.categoryCardWrapper}
-          >
-            <ImageBackground
-              source={require("../../assets/images/category-folder-bg.png")}
-              style={styles.categoryFolderCard}
-              imageStyle={styles.categoryFolderImage}
-            >
-              {/* Top area inside the tab: Icon on left, Wave Graph on right */}
-              <View style={styles.categoryCardTop}>
-                <View style={styles.categoryIconContainer}>
-                  <Icon name="tv" size={30} color="#D4F82C" strokeWidth={2.2} />
-                  {/* Small blue circular play badge */}
-                  <View style={styles.bluePlayBadge}>
-                    <Svg width={7} height={7} viewBox="0 0 8 8">
-                      <Path d="M2 1.5l5 2.5-5 2.5z" fill="#FFFFFF" />
-                    </Svg>
-                  </View>
-                </View>
+          {displayCategories.map((cat) => {
+            return (
+              <TouchableOpacity
+                key={cat.id}
+                activeOpacity={0.88}
+                onPress={() =>
+                  navigation.navigate("CategoryMemories", {
+                    categoryId: cat.id,
+                    categoryName: cat.name,
+                    categoryIcon: cat.icon,
+                    count: cat.count,
+                  })
+                }
+                style={styles.categoryCardWrapper}
+              >
+                <ImageBackground
+                  source={require("../../assets/images/category-folder-bg.png")}
+                  style={styles.categoryFolderCard}
+                  imageStyle={styles.categoryFolderImage}
+                >
+                  {/* Top area inside the tab: Icon on left, Wave Graph on right */}
+                  <View style={styles.categoryCardTop}>
+                    <View style={styles.categoryIconContainer}>
+                      <Icon name={cat.icon} size={30} color="#D4F82C" strokeWidth={2.2} />
+                      {/* Small accent diamond/play badge */}
+                      <View style={styles.bluePlayBadge}>
+                        <Svg width={7} height={7} viewBox="0 0 8 8">
+                          <Path d="M2 1.5l5 2.5-5 2.5z" fill="#FFFFFF" />
+                        </Svg>
+                      </View>
+                    </View>
 
-                <Image
-                  source={require("../../assets/images/category-graph.png")}
-                  style={styles.categoryGraphImage}
-                  resizeMode="contain"
-                />
-              </View>
+                    <Image
+                      source={require("../../assets/images/category-graph.png")}
+                      style={styles.categoryGraphImage}
+                      resizeMode="contain"
+                    />
+                  </View>
 
-              {/* Bottom area: Overlapping thumbnail bubbles & Count badge & Title */}
-              <View style={styles.categoryCardBottom}>
-                <View style={styles.mediaCountRow}>
-                  <View style={styles.mediaClusterStack}>
-                    <View style={[styles.clusterCircle, { zIndex: 3 }]}>
-                      <Icon name="video" size={11} color="#FFFFFF" />
+                  {/* Bottom area: Overlapping thumbnail bubbles & Count badge & Title */}
+                  <View style={styles.categoryCardBottom}>
+                    <View style={styles.mediaCountRow}>
+                      <View style={styles.mediaClusterStack}>
+                        <View style={[styles.clusterCircle, { zIndex: 3 }]}>
+                          <Icon name={cat.icon} size={11} color="#FFFFFF" />
+                        </View>
+                        <View style={[styles.clusterCircle, { marginLeft: -7, zIndex: 2 }]}>
+                          <Icon name="camera" size={10} color="#FFFFFF" />
+                        </View>
+                        <View style={[styles.clusterCircle, { marginLeft: -7, zIndex: 1 }]}>
+                          <Icon name="link" size={10} color="#FFFFFF" />
+                        </View>
+                      </View>
+                      <View style={styles.countBadge}>
+                        <Text style={styles.countBadgeText}>{cat.count}</Text>
+                      </View>
                     </View>
-                    <View style={[styles.clusterCircle, { marginLeft: -7, zIndex: 2 }]}>
-                      <Icon name="camera" size={10} color="#FFFFFF" />
-                    </View>
-                    <View style={[styles.clusterCircle, { marginLeft: -7, zIndex: 1 }]}>
-                      <Icon name="link" size={10} color="#FFFFFF" />
-                    </View>
+                    <Text style={styles.categoryCardTitle} numberOfLines={1}>
+                      {cat.name}
+                    </Text>
                   </View>
-                  <View style={styles.countBadge}>
-                    <Text style={styles.countBadgeText}>8</Text>
-                  </View>
-                </View>
-                <Text style={styles.categoryCardTitle}>Entertainment</Text>
-              </View>
-            </ImageBackground>
-          </TouchableOpacity>
-
-          {/* Category Card 2: Ideas */}
-          <TouchableOpacity
-            activeOpacity={0.88}
-            onPress={() => navigation.navigate("Search")}
-            style={styles.categoryCardWrapper}
-          >
-            <ImageBackground
-              source={require("../../assets/images/category-folder-bg.png")}
-              style={styles.categoryFolderCard}
-              imageStyle={styles.categoryFolderImage}
-            >
-              {/* Top area inside the tab */}
-              <View style={styles.categoryCardTop}>
-                <View style={styles.categoryIconContainer}>
-                  <Icon name="lightbulb" size={30} color="#D4F82C" strokeWidth={2.2} />
-                  {/* Blue diamond badge */}
-                  <View style={styles.blueDiamondBadge}>
-                    <Icon name="diamond" size={15} color="#60A5FA" />
-                  </View>
-                </View>
-
-                <Image
-                  source={require("../../assets/images/category-graph.png")}
-                  style={styles.categoryGraphImage}
-                  resizeMode="contain"
-                />
-              </View>
-
-              {/* Bottom area */}
-              <View style={styles.categoryCardBottom}>
-                <View style={styles.mediaCountRow}>
-                  <View style={styles.mediaClusterStack}>
-                    <View style={[styles.clusterCircle, { zIndex: 3 }]}>
-                      <Icon name="lightbulb" size={11} color="#FFFFFF" />
-                    </View>
-                    <View style={[styles.clusterCircle, { marginLeft: -7, zIndex: 2 }]}>
-                      <Icon name="diamond" size={10} color="#FFFFFF" />
-                    </View>
-                    <View style={[styles.clusterCircle, { marginLeft: -7, zIndex: 1 }]}>
-                      <Icon name="sparkles" size={10} color="#FFFFFF" />
-                    </View>
-                  </View>
-                  <View style={styles.countBadge}>
-                    <Text style={styles.countBadgeText}>3</Text>
-                  </View>
-                </View>
-                <Text style={styles.categoryCardTitle}>Ideas</Text>
-              </View>
-            </ImageBackground>
-          </TouchableOpacity>
-          {/* Category Card 3: Research */}
-          <TouchableOpacity
-            activeOpacity={0.88}
-            onPress={() => navigation.navigate("Search")}
-            style={styles.categoryCardWrapper}
-          >
-            <ImageBackground
-              source={require("../../assets/images/category-folder-bg.png")}
-              style={styles.categoryFolderCard}
-              imageStyle={styles.categoryFolderImage}
-            >
-              {/* Top area inside the tab */}
-              <View style={styles.categoryCardTop}>
-                <View style={styles.categoryIconContainer}>
-                  <Icon name="book" size={30} color="#D4F82C" strokeWidth={2.2} />
-                  {/* Cyan sparkle badge */}
-                  <View style={styles.cyanSparkleBadge}>
-                    <Icon name="sparkles" size={10} color="#FFFFFF" />
-                  </View>
-                </View>
-
-                <Image
-                  source={require("../../assets/images/category-graph.png")}
-                  style={styles.categoryGraphImage}
-                  resizeMode="contain"
-                />
-              </View>
-
-              {/* Bottom area */}
-              <View style={styles.categoryCardBottom}>
-                <View style={styles.mediaCountRow}>
-                  <View style={styles.mediaClusterStack}>
-                    <View style={[styles.clusterCircle, { zIndex: 3 }]}>
-                      <Icon name="book" size={11} color="#FFFFFF" />
-                    </View>
-                    <View style={[styles.clusterCircle, { marginLeft: -7, zIndex: 2 }]}>
-                      <Icon name="link" size={10} color="#FFFFFF" />
-                    </View>
-                    <View style={[styles.clusterCircle, { marginLeft: -7, zIndex: 1 }]}>
-                      <Icon name="sparkles" size={10} color="#FFFFFF" />
-                    </View>
-                  </View>
-                  <View style={styles.countBadge}>
-                    <Text style={styles.countBadgeText}>7</Text>
-                  </View>
-                </View>
-                <Text style={styles.categoryCardTitle}>Research</Text>
-              </View>
-            </ImageBackground>
-          </TouchableOpacity>
-
-          {/* Category Card 4: Technology */}
-          <TouchableOpacity
-            activeOpacity={0.88}
-            onPress={() => navigation.navigate("Search")}
-            style={styles.categoryCardWrapper}
-          >
-            <ImageBackground
-              source={require("../../assets/images/category-folder-bg.png")}
-              style={styles.categoryFolderCard}
-              imageStyle={styles.categoryFolderImage}
-            >
-              {/* Top area inside the tab */}
-              <View style={styles.categoryCardTop}>
-                <View style={styles.categoryIconContainer}>
-                  <Icon name="tech" size={30} color="#D4F82C" strokeWidth={2.2} />
-                  {/* Purple diamond badge */}
-                  <View style={styles.purpleStarBadge}>
-                    <Icon name="diamond" size={10} color="#FFFFFF" />
-                  </View>
-                </View>
-
-                <Image
-                  source={require("../../assets/images/category-graph.png")}
-                  style={styles.categoryGraphImage}
-                  resizeMode="contain"
-                />
-              </View>
-
-              {/* Bottom area */}
-              <View style={styles.categoryCardBottom}>
-                <View style={styles.mediaCountRow}>
-                  <View style={styles.mediaClusterStack}>
-                    <View style={[styles.clusterCircle, { zIndex: 3 }]}>
-                      <Icon name="tech" size={11} color="#FFFFFF" />
-                    </View>
-                    <View style={[styles.clusterCircle, { marginLeft: -7, zIndex: 2 }]}>
-                      <Icon name="video" size={10} color="#FFFFFF" />
-                    </View>
-                    <View style={[styles.clusterCircle, { marginLeft: -7, zIndex: 1 }]}>
-                      <Icon name="link" size={10} color="#FFFFFF" />
-                    </View>
-                  </View>
-                  <View style={styles.countBadge}>
-                    <Text style={styles.countBadgeText}>12</Text>
-                  </View>
-                </View>
-                <Text style={styles.categoryCardTitle}>Technology</Text>
-              </View>
-            </ImageBackground>
-          </TouchableOpacity>
-
-          {/* Category Card 5: Audio & Music */}
-          <TouchableOpacity
-            activeOpacity={0.88}
-            onPress={() => navigation.navigate("Search")}
-            style={styles.categoryCardWrapper}
-          >
-            <ImageBackground
-              source={require("../../assets/images/category-folder-bg.png")}
-              style={styles.categoryFolderCard}
-              imageStyle={styles.categoryFolderImage}
-            >
-              {/* Top area inside the tab */}
-              <View style={styles.categoryCardTop}>
-                <View style={styles.categoryIconContainer}>
-                  <Icon name="music" size={30} color="#D4F82C" strokeWidth={2.2} />
-                  {/* Orange play badge */}
-                  <View style={styles.orangePlayBadge}>
-                    <Svg width={7} height={7} viewBox="0 0 8 8">
-                      <Path d="M2 1.5l5 2.5-5 2.5z" fill="#FFFFFF" />
-                    </Svg>
-                  </View>
-                </View>
-
-                <Image
-                  source={require("../../assets/images/category-graph.png")}
-                  style={styles.categoryGraphImage}
-                  resizeMode="contain"
-                />
-              </View>
-
-              {/* Bottom area */}
-              <View style={styles.categoryCardBottom}>
-                <View style={styles.mediaCountRow}>
-                  <View style={styles.mediaClusterStack}>
-                    <View style={[styles.clusterCircle, { zIndex: 3 }]}>
-                      <Icon name="music" size={11} color="#FFFFFF" />
-                    </View>
-                    <View style={[styles.clusterCircle, { marginLeft: -7, zIndex: 2 }]}>
-                      <Icon name="video" size={10} color="#FFFFFF" />
-                    </View>
-                    <View style={[styles.clusterCircle, { marginLeft: -7, zIndex: 1 }]}>
-                      <Icon name="link" size={10} color="#FFFFFF" />
-                    </View>
-                  </View>
-                  <View style={styles.countBadge}>
-                    <Text style={styles.countBadgeText}>5</Text>
-                  </View>
-                </View>
-                <Text style={styles.categoryCardTitle}>Music & Audio</Text>
-              </View>
-            </ImageBackground>
-          </TouchableOpacity>
+                </ImageBackground>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
 
         {/* ── AI Insight Section with circular particle background ── */}

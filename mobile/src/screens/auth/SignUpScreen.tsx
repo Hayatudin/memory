@@ -69,7 +69,13 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({ navigation }) => {
     const e = validate();
     if (Object.keys(e).length > 0) { setErrors(e); return; }
     setErrors({});
-    await register({ name: name.trim(), email: email.trim(), password });
+    const success = await register({ name: name.trim(), email: email.trim(), password });
+    if (success) {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "MainTabs" }],
+      });
+    }
   };
 
   return (

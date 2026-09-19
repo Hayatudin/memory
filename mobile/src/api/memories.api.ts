@@ -1,10 +1,14 @@
 import { apiClient } from "./client";
-import { Memory, ApiResponse, MemorySourceType } from "../types/models";
+import { Memory, ApiResponse, MemorySourceType, MemoryType, LinkPreviewData } from "../types/models";
 
 export interface CreateMemoryPayload {
   title: string;
   content?: string;
-  sourceUrl?: string;
+  type?: MemoryType;
+  categoryId?: string | null;
+  sourceUrl?: string | null;
+  mediaUrl?: string | null;
+  mediaMetadata?: any | null;
   sourceType?: MemorySourceType;
   isFavorite?: boolean;
   tags?: string[];
@@ -18,6 +22,8 @@ export interface UpdateMemoryPayload extends Partial<CreateMemoryPayload> {
 export interface ListMemoriesParams {
   page?: number;
   limit?: number;
+  categoryId?: string;
+  type?: MemoryType;
   sourceType?: MemorySourceType;
   isFavorite?: boolean;
   isArchived?: boolean;
@@ -51,6 +57,14 @@ export class MemoriesApi {
   static async delete(id: string): Promise<ApiResponse<{ id: string; deleted: boolean }>> {
     const res = await apiClient.delete<ApiResponse<{ id: string; deleted: boolean }>>(
       `/api/v1/memories/${id}`
+    );
+    return res.data;
+  }
+
+  static async getLinkPreview(url: string): Promise<ApiResponse<LinkPreviewData>> {
+    const res = await apiClient.get<ApiResponse<LinkPreviewData>>(
+      "/api/v1/memories/link-preview",
+      { params: { url } }
     );
     return res.data;
   }

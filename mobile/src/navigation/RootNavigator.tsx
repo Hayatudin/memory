@@ -17,6 +17,11 @@ import { SearchScreen } from "../screens/search/SearchScreen";
 import { ProfileScreen } from "../screens/profile/ProfileScreen";
 import { AIAssistantScreen } from "../screens/ai/AIAssistantScreen";
 import { AddMemoryModal } from "../screens/memories/AddMemoryModal";
+import { CategoryMemoriesScreen } from "../screens/memories/CategoryMemoriesScreen";
+import { MemoryDetailScreen } from "../screens/memories/MemoryDetailScreen";
+import { OnboardingScreen } from "../screens/onboarding/OnboardingScreen";
+import { SubscriptionScreen } from "../screens/subscription/SubscriptionScreen";
+import { PaymentScreen } from "../screens/payment/PaymentScreen";
 
 const Stack = createNativeStackNavigator();
 const AndroidTab = createBottomTabNavigator();
@@ -156,33 +161,48 @@ export function RootNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator
+        key={isAuthenticated ? "authenticated" : "guest"}
+        initialRouteName={!isAuthenticated ? "Onboarding" : "MainTabs"}
         screenOptions={{
           headerShown: false,
           contentStyle: { backgroundColor: Theme.colors.background },
         }}
       >
-        {!isAuthenticated ? (
-          <Stack.Screen name="Auth" component={AuthNavigator} />
-        ) : (
-          <>
-            <Stack.Screen name="MainTabs" component={MainTabNavigator} />
-            <Stack.Screen
-              name="AIAssistant"
-              component={AIAssistantScreen}
-              options={{
-                animation: "slide_from_bottom",
-              }}
-            />
-            <Stack.Screen
-              name="AddMemoryModal"
-              component={AddMemoryModal}
-              options={{
-                presentation: "modal",
-                animation: "slide_from_bottom",
-              }}
-            />
-          </>
-        )}
+        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+        <Stack.Screen name="Subscription" component={SubscriptionScreen} />
+        <Stack.Screen name="Payment" component={PaymentScreen} />
+        <Stack.Screen name="Auth" component={AuthNavigator} />
+        <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+        <Stack.Screen
+          name="AIAssistant"
+          component={AIAssistantScreen}
+          options={{
+            animation: "slide_from_bottom",
+          }}
+        />
+        <Stack.Screen
+          name="AddMemoryModal"
+          component={AddMemoryModal}
+          options={{
+            presentation: "transparentModal",
+            animation: "fade",
+            gestureEnabled: false,
+          }}
+        />
+        <Stack.Screen
+          name="CategoryMemories"
+          component={CategoryMemoriesScreen}
+          options={{
+            animation: "slide_from_right",
+          }}
+        />
+        <Stack.Screen
+          name="MemoryDetail"
+          component={MemoryDetailScreen}
+          options={{
+            animation: "slide_from_right",
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
