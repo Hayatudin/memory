@@ -28,6 +28,7 @@ import {
 interface VoiceMemoryComposerProps {
   onBack: () => void;
   onSuccess: (memory: Memory) => void;
+  initialMemory?: Memory | null;
 }
 
 type RecordingState = "idle" | "recording" | "paused" | "recorded";
@@ -35,18 +36,33 @@ type RecordingState = "idle" | "recording" | "paused" | "recorded";
 export const VoiceMemoryComposer: React.FC<VoiceMemoryComposerProps> = ({
   onBack,
   onSuccess,
+  initialMemory,
 }) => {
-  const { createMemory, categories, fetchCategories } = useMemoryStore();
+  const { createMemory, updateMemory, categories, fetchCategories } = useMemoryStore();
 
-  const [recordingState, setRecordingState] = useState<RecordingState>("idle");
-  const [durationSecs, setDurationSecs] = useState<number>(12);
-  const [audioUri, setAudioUri] = useState<string | null>(null);
-
-  const [title, setTitle] = useState("Quick marketing idea");
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
-    categories.find((c) => c.name.toLowerCase().includes("idea")) ||
-      (categories.length > 0 ? categories[0] : null)
+  const [recordingState, setRecordingState] = useState<RecordingState>(
+    initialMemory?.mediaUrl ? "recorded" : "idle"
   );
+  const [durationSecs, setDurationSecs] = useState<number>(
+    initialMemory?.mediaMetadata?.durationSecs || 12
+  );
+  const [audioUri, setAudioUri] = useState<string | null>(
+    initialMemory?.mediaUrl || null
+  );
+
+  const [title, setTitle] = useState(
+    initialMemory?.title || "Quick marketing idea"
+  );
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(() => {
+    if (initialMemory?.categoryId && categories.length > 0) {
+      const match = categories.find((c) => c.id === initialMemory.categoryId);
+      if (match) return match;
+    }
+    return (
+      categories.find((c) => c.name.toLowerCase().includes("idea")) ||
+      (categories.length > 0 ? categories[0] : null)
+    );
+  });
 
   // Load real categories from database on mount
   useEffect(() => {
@@ -54,16 +70,34 @@ export const VoiceMemoryComposer: React.FC<VoiceMemoryComposerProps> = ({
   }, [fetchCategories]);
 
   useEffect(() => {
-    if (!selectedCategory && categories.length > 0) {
-      const match =
-        categories.find(
-          (c) =>
-            c.name.toLowerCase().includes("idea") ||
-            c.name.toLowerCase().includes("music")
-        ) || categories[0];
-      setSelectedCategory(match);
+    if (categories.length > 0) {
+      if (initialMemory?.categoryId) {
+        const match = categories.find((c) => c.id === initialMemory.categoryId);
+        if (match) {
+          setSelectedCategory(match);
+          return;
+        }
+      }
+      if (initialMemory?.categoryName) {
+        const match = categories.find(
+          (c) => c.name.toLowerCase() === initialMemory.categoryName?.toLowerCase()
+        );
+        if (match) {
+          setSelectedCategory(match);
+          return;
+        }
+      }
+      if (!selectedCategory) {
+        const match =
+          categories.find(
+            (c) =>
+              c.name.toLowerCase().includes("idea") ||
+              c.name.toLowerCase().includes("music")
+          ) || categories[0];
+        setSelectedCategory(match);
+      }
     }
-  }, [categories, selectedCategory]);
+  }, [categories, initialMemory]);
 
   const [categorySheetVisible, setCategorySheetVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -286,19 +320,32 @@ export const VoiceMemoryComposer: React.FC<VoiceMemoryComposerProps> = ({
           day: "numeric",
         })}`;
 
-      const created = await createMemory({
-        title: finalTitle,
-        type: "voice",
-        mediaUrl,
-        mediaMetadata: {
-          durationSecs: durationSecs || 12,
-          format: "m4a",
-        },
-        categoryId: selectedCategory ? selectedCategory.id : undefined,
-      });
+      let resultMemory: Memory;
+      if (initialMemory?.id) {
+        resultMemory = await updateMemory(initialMemory.id, {
+          title: finalTitle,
+          mediaUrl,
+          mediaMetadata: {
+            durationSecs: durationSecs || 12,
+            format: "m4a",
+          },
+          categoryId: selectedCategory ? selectedCategory.id : undefined,
+        });
+      } else {
+        resultMemory = await createMemory({
+          title: finalTitle,
+          type: "voice",
+          mediaUrl,
+          mediaMetadata: {
+            durationSecs: durationSecs || 12,
+            format: "m4a",
+          },
+          categoryId: selectedCategory ? selectedCategory.id : undefined,
+        });
+      }
 
       setIsProcessing(false);
-      onSuccess(created);
+      onSuccess(resultMemory);
     } catch (err: any) {
       setIsProcessing(false);
       setErrorMessage(

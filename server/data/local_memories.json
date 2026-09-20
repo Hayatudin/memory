@@ -23,7 +23,7 @@
       "aiInsights": "The visual content reinforces the key takeaways: Displaying When did insta get this update and sharing to Bemory AI."
     },
     "createdAt": "2026-09-19T02:13:33.125Z",
-    "updatedAt": "2026-09-19T10:04:35.881Z"
+    "updatedAt": "2026-09-20T08:14:35.821Z"
   },
   {
     "id": "68f85eaf-19e9-4e4b-b75a-0a1eaa3c03bc",
@@ -40,9 +40,11 @@
     "mediaMetadata": null,
     "isFavorite": false,
     "isArchived": false,
-    "metadata": null,
+    "metadata": {
+      "aiInsights": "The visual content reinforces the key takeaways: Image Memory."
+    },
     "createdAt": "2026-09-19T02:07:41.281Z",
-    "updatedAt": "2026-09-19T02:07:41.281Z"
+    "updatedAt": "2026-09-20T07:38:05.647Z"
   },
   {
     "id": "2718007b-5d65-49a5-ab7c-b6907e3a9d5b",
@@ -59,9 +61,11 @@
     "mediaMetadata": null,
     "isFavorite": false,
     "isArchived": false,
-    "metadata": null,
+    "metadata": {
+      "aiInsights": "The image highlights modern mobile design patterns, clear visual hierarchy, and intuitive user engagement elements."
+    },
     "createdAt": "2026-09-19T02:03:27.150Z",
-    "updatedAt": "2026-09-19T02:03:27.150Z"
+    "updatedAt": "2026-09-20T08:21:26.347Z"
   },
   {
     "id": "463079b6-bc88-44a7-b809-13028be3524d",

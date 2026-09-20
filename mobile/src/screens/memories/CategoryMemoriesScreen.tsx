@@ -23,6 +23,7 @@ import { IOSGlassButton } from "../../components/common/IOSGlassButton";
 import { IOSGlassCapsule } from "../../components/common/IOSGlassCapsule";
 import { IOSGlassCircle } from "../../components/common/IOSGlassCircle";
 import { useMemoryStore } from "../../store/memoryStore";
+import { Memory, MemoryType } from "../../types/models";
 
 interface MemoryItem {
   id: string;
@@ -32,6 +33,7 @@ interface MemoryItem {
   type: "link" | "image" | "text" | "voice";
   typeLabel: string;
   url?: string;
+  categoryId?: string;
 }
 
 interface FilterChip {
@@ -87,9 +89,10 @@ export const CategoryMemoriesScreen: React.FC<CategoryMemoriesScreenProps> = ({
     memories: storeMemories,
     categories: storeCategories,
     fetchMemories,
+    fetchCategories,
+    removeMemoryLocally,
     updateCategory,
     deleteCategory,
-    removeMemoryLocally,
   } = useMemoryStore();
 
   useEffect(() => {
@@ -165,6 +168,7 @@ export const CategoryMemoriesScreen: React.FC<CategoryMemoriesScreenProps> = ({
         type: (mem.type as any) || "text",
         typeLabel,
         url: mem.sourceUrl || undefined,
+        categoryId: mem.categoryId || undefined,
       };
     });
   }, [storeMemories, categoryId, categoryName]);
@@ -196,7 +200,24 @@ export const CategoryMemoriesScreen: React.FC<CategoryMemoriesScreenProps> = ({
   };
 
   const handleEdit = (memory: MemoryItem) => {
-    Alert.alert("Edit Memory", `Edit details for "${memory.title}"`);
+    const fullMemory: Memory = storeMemories.find((m) => m.id === memory.id) || ({
+      id: memory.id,
+      title: memory.title,
+      content: memory.subtitle,
+      type: (memory.type as MemoryType) || (memory.url ? "link" : "text"),
+      sourceUrl: memory.url,
+      categoryId: memory.categoryId || initialCategoryId,
+      categoryName: categoryName,
+      isFavorite: false,
+      isArchived: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    } as Memory);
+
+    navigation.navigate("AddMemoryModal", {
+      initialMemory: fullMemory,
+      initialType: fullMemory.type,
+    });
   };
 
   const confirmDelete = (id: string) => {

@@ -364,10 +364,23 @@ export const useMemoryStore = create<MemoryState>((set, get) => ({
   },
 
   updateMemory: async (id: string, payload: UpdateMemoryPayload) => {
+    const category = payload.categoryId
+      ? get().categories.find((c) => c.id === payload.categoryId)
+      : null;
+
     try {
       const res = await MemoriesApi.update(id, payload);
       if (res.data) {
-        const updated = res.data;
+        let updated = res.data;
+        if (category && (!updated.categoryName || !updated.categoryId)) {
+          updated = {
+            ...updated,
+            categoryId: category.id,
+            categoryName: category.name,
+            categoryIcon: category.icon || updated.categoryIcon,
+            categoryColor: category.color || updated.categoryColor,
+          };
+        }
         set((state) => ({
           memories: state.memories.map((m) => (m.id === id ? updated : m)),
         }));
@@ -388,6 +401,14 @@ export const useMemoryStore = create<MemoryState>((set, get) => ({
         createdAt: new Date().toISOString(),
       }),
       ...payload,
+      ...(category
+        ? {
+            categoryId: category.id,
+            categoryName: category.name,
+            categoryIcon: category.icon,
+            categoryColor: category.color,
+          }
+        : {}),
       updatedAt: new Date().toISOString(),
     } as Memory;
     set((state) => ({

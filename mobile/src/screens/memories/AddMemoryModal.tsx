@@ -26,6 +26,12 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 interface AddMemoryModalProps {
   navigation: any;
+  route?: {
+    params?: {
+      initialMemory?: Memory;
+      initialType?: MemoryType;
+    };
+  };
 }
 
 interface TypeCardOption {
@@ -250,10 +256,20 @@ const LiquidGlassCard: React.FC<LiquidGlassCardProps> = ({ option, onPress }) =>
   );
 };
 
-export const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ navigation }) => {
+export const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ navigation, route }) => {
   const { fetchMemories, fetchCategories, categories } = useMemoryStore();
-  const [activeComposer, setActiveComposer] = useState<MemoryType | null>(null);
+  const initialMemory = route?.params?.initialMemory;
+  const initialType = (route?.params?.initialType as MemoryType | undefined) || initialMemory?.type || null;
+
+  const [activeComposer, setActiveComposer] = useState<MemoryType | null>(initialType);
   const [savedMemory, setSavedMemory] = useState<Memory | null>(null);
+
+  useEffect(() => {
+    if (route?.params?.initialMemory) {
+      const type = route.params.initialType || route.params.initialMemory.type || "text";
+      setActiveComposer(type);
+    }
+  }, [route?.params?.initialMemory, route?.params?.initialType]);
 
   const SHEET_HEIGHT = Math.round(SCREEN_HEIGHT * 0.74);
   const translateY = useRef(new Animated.Value(SHEET_HEIGHT)).current;
@@ -458,9 +474,13 @@ export const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ navigation }) =>
               </View>
             </View>
 
-            <Text style={styles.successHeadline}>Memory saved ✓</Text>
+            <Text style={styles.successHeadline}>
+              {initialMemory ? "Memory updated ✓" : "Memory saved ✓"}
+            </Text>
             <Text style={styles.successSubline}>
-              Your memory has been saved successfully.
+              {initialMemory
+                ? "Your memory has been updated successfully."
+                : "Your memory has been saved successfully."}
             </Text>
           </View>
 
@@ -529,7 +549,14 @@ export const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ navigation }) =>
       <SafeAreaView style={styles.fullScreenBlack}>
         <StatusBar barStyle="light-content" />
         <TextMemoryComposer
-          onBack={() => setActiveComposer(null)}
+          initialMemory={initialMemory}
+          onBack={() => {
+            if (initialMemory) {
+              navigation.goBack();
+            } else {
+              setActiveComposer(null);
+            }
+          }}
           onSuccess={handleSaveSuccess}
         />
       </SafeAreaView>
@@ -541,7 +568,14 @@ export const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ navigation }) =>
       <SafeAreaView style={styles.fullScreenBlack}>
         <StatusBar barStyle="light-content" />
         <ImageMemoryComposer
-          onBack={() => setActiveComposer(null)}
+          initialMemory={initialMemory}
+          onBack={() => {
+            if (initialMemory) {
+              navigation.goBack();
+            } else {
+              setActiveComposer(null);
+            }
+          }}
           onSuccess={handleSaveSuccess}
         />
       </SafeAreaView>
@@ -553,7 +587,14 @@ export const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ navigation }) =>
       <SafeAreaView style={styles.fullScreenBlack}>
         <StatusBar barStyle="light-content" />
         <LinkMemoryComposer
-          onBack={() => setActiveComposer(null)}
+          initialMemory={initialMemory}
+          onBack={() => {
+            if (initialMemory) {
+              navigation.goBack();
+            } else {
+              setActiveComposer(null);
+            }
+          }}
           onSuccess={handleSaveSuccess}
         />
       </SafeAreaView>
@@ -565,7 +606,14 @@ export const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ navigation }) =>
       <SafeAreaView style={styles.fullScreenBlack}>
         <StatusBar barStyle="light-content" />
         <VoiceMemoryComposer
-          onBack={() => setActiveComposer(null)}
+          initialMemory={initialMemory}
+          onBack={() => {
+            if (initialMemory) {
+              navigation.goBack();
+            } else {
+              setActiveComposer(null);
+            }
+          }}
           onSuccess={handleSaveSuccess}
         />
       </SafeAreaView>

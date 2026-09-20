@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import {
   Alert,
   Platform,
   Share,
+  TextInput,
 } from "react-native";
 import { useAuthStore } from "../../store/authStore";
 import { useMemoryStore } from "../../store/memoryStore";
@@ -22,6 +23,7 @@ import { IOSGlassButton } from "../../components/common/IOSGlassButton";
 import { IOSGlassCapsule } from "../../components/common/IOSGlassCapsule";
 import { IOSGlassCircle } from "../../components/common/IOSGlassCircle";
 import Svg, { Path, Defs, LinearGradient, Stop, Rect } from "react-native-svg";
+import { Memory, MemoryType } from "../../types/models";
 
 const DEMO_AVATAR = require("../../assets/avatar_demo.jpg");
 
@@ -32,6 +34,9 @@ interface MemoryItem {
   icon: IconName;
   timestamp: string;
   url?: string;
+  category?: string;
+  categoryId?: string;
+  type?: string;
 }
 
 interface HomeScreenProps {
@@ -155,11 +160,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     return "document";
   };
 
-  const activeMemories: MemoryItem[] =
-    storeMemories.length > 0
-      ? storeMemories.map((m) => ({
+  const activeMemories: MemoryItem[] = useMemo(() => {
+    if (storeMemories.length > 0) {
+      return storeMemories.map((m) => {
+        const matchedCat = storeCategories.find(
+          (c) => c.id === m.categoryId || c.name.toLowerCase() === m.categoryName?.toLowerCase()
+        );
+        const categoryName = matchedCat?.name || m.categoryName || "General";
+
+        return {
           id: m.id,
-          title: m.title,
+          title: m.title || "Untitled Memory",
           subtitle:
             m.content ||
             m.sourceUrl ||
@@ -171,8 +182,30 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           icon: getMemoryIcon(m.type),
           timestamp: formatTimestamp(m.createdAt),
           url: m.sourceUrl || undefined,
-        }))
-      : memories;
+          category: categoryName,
+          categoryId: m.categoryId || undefined,
+          type: m.type,
+        };
+      });
+    }
+    return memories;
+  }, [storeMemories, storeCategories, memories]);
+
+  const searchInputRef = useRef<TextInput>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const isSearching = searchQuery.trim().length > 0;
+
+  // Search memories across title, subtitle/content, category, type, and URL
+  const matchingMemories = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return [];
+
+    const terms = query.split(/\s+/).filter(Boolean);
+    return activeMemories.filter((mem) => {
+      const searchTarget = `${mem.title} ${mem.subtitle} ${mem.category || ""} ${mem.type || ""} ${mem.url || ""}`.toLowerCase();
+      return terms.every((term) => searchTarget.includes(term));
+    });
+  }, [searchQuery, activeMemories]);
 
   const [pinnedIds, setPinnedIds] = useState<string[]>([]);
   const [askAiWidth, setAskAiWidth] = useState<number>(0);
@@ -203,7 +236,24 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   };
 
   const handleEdit = (memory: MemoryItem) => {
-    Alert.alert("Edit Memory", `Edit details for "${memory.title}"`);
+    const fullMemory: Memory = storeMemories.find((m) => m.id === memory.id) || ({
+      id: memory.id,
+      title: memory.title,
+      content: memory.subtitle,
+      type: (memory.type as MemoryType) || (memory.url ? "link" : "text"),
+      sourceUrl: memory.url,
+      categoryId: memory.categoryId,
+      categoryName: memory.category,
+      isFavorite: false,
+      isArchived: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    } as Memory);
+
+    navigation.navigate("AddMemoryModal", {
+      initialMemory: fullMemory,
+      initialType: fullMemory.type,
+    });
   };
 
   const confirmDelete = (id: string) => {
@@ -278,6 +328,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
       >
         {/* ── Top Header: Avatar, Welcome text, and iOS Glass Notification Bell ── */}
         <View style={styles.headerRow}>
@@ -324,10 +376,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           </View>
         </View>
 
-        {/* ── Search Bar with iOS Specular Gradient Stroke & Glass Voice Button ── */}
+        {/* ── Search Bar with Live TextInput, iOS Specular Capsule & Clear Button ── */}
         <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={() => navigation.navigate("Search")}
+          activeOpacity={1}
+          onPress={() => searchInputRef.current?.focus()}
           style={styles.searchBarWrapper}
         >
           <IOSGlassCapsule
@@ -338,15 +390,143 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             contentStyle={styles.searchBarContent}
           >
             <Icon name="search" size={18} color="#8E8E93" />
-            <Text style={styles.searchPlaceholder}>Search your memories....</Text>
-            <IOSGlassButton
-              size={34}
-              onPress={() => navigation.navigate("Search")}
-            >
-              <Icon name="sparkles" size={15} color="#D1D5DB" />
-            </IOSGlassButton>
+            <TextInput
+              ref={searchInputRef}
+              placeholder="Search your memories...."
+              placeholderTextColor="#8E8E93"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              style={styles.searchInput}
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="search"
+            />
+            {searchQuery.trim().length > 0 ? (
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => setSearchQuery("")}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                style={styles.clearSearchBtn}
+              >
+                <Icon name="close" size={15} color="#8E8E93" strokeWidth={2.4} />
+              </TouchableOpacity>
+            ) : (
+              <IOSGlassButton
+                size={34}
+                onPress={() => navigation.navigate("Search")}
+              >
+                <Icon name="sparkles" size={15} color="#D1D5DB" />
+              </IOSGlassButton>
+            )}
           </IOSGlassCapsule>
         </TouchableOpacity>
+
+        {/* ── Search Results Section (Live keyword search on Home) ── */}
+        {isSearching && (
+          <View style={styles.searchResultsSection}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Matching Memories</Text>
+              <View style={styles.resultsCountBadge}>
+                <Text style={styles.resultsCountText}>
+                  {matchingMemories.length} {matchingMemories.length === 1 ? "memory" : "memories"}
+                </Text>
+              </View>
+            </View>
+
+            {matchingMemories.length > 0 ? (
+              <View style={styles.memoriesList}>
+                {matchingMemories.map((item) => {
+                  const isPinned = pinnedIds.includes(item.id);
+                  return (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={styles.memoryItem}
+                      activeOpacity={0.8}
+                      onPress={() =>
+                        navigation.navigate("MemoryDetail", {
+                          memoryId: item.id,
+                          initialData: item,
+                        })
+                      }
+                    >
+                      <View style={styles.memoryIconBadgeCol}>
+                        <IOSGlassCircle size={60} strokeWidth={1.4} fill="rgba(26, 28, 33, 0.95)">
+                          <Icon
+                            name={item.icon}
+                            size={24}
+                            color="#FFFFFF"
+                            strokeWidth={item.icon === "link" ? 2.4 : 2}
+                          />
+                        </IOSGlassCircle>
+                        <View style={styles.timestampBadge}>
+                          <Text style={styles.timestampBadgeText} numberOfLines={1}>
+                            {item.timestamp}
+                          </Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.memoryTextContent}>
+                        <View style={styles.memoryTitleRow}>
+                          <Text
+                            style={styles.memoryTitle}
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                          >
+                            {item.title}
+                          </Text>
+                          {isPinned && (
+                            <View style={styles.pinnedBadge}>
+                              <Icon name="pin" size={10} color="#D4F82C" />
+                            </View>
+                          )}
+                        </View>
+                        {item.url ? (
+                          <View style={styles.memoryLinkRow}>
+                            <Text
+                              style={styles.memorySubtitle}
+                              numberOfLines={1}
+                              ellipsizeMode="tail"
+                            >
+                              {item.subtitle}
+                            </Text>
+                            <Icon name="copy" size={12} color="#6B7280" />
+                          </View>
+                        ) : (
+                          <Text
+                            style={styles.memorySubtitle}
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                          >
+                            {item.subtitle}
+                          </Text>
+                        )}
+                      </View>
+
+                      <TouchableOpacity
+                        style={styles.moreMenuBtn}
+                        activeOpacity={0.6}
+                        hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
+                        onPress={() => handleMemoryMenu(item)}
+                      >
+                        <Icon name="more-vertical" size={20} color="#FFFFFF" />
+                      </TouchableOpacity>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            ) : (
+              <View style={styles.searchEmptyContainer}>
+                <IOSGlassCircle size={56} fill="rgba(255, 255, 255, 0.04)" strokeWidth={1.2}>
+                  <Icon name="search" size={22} color="#71717A" strokeWidth={1.8} />
+                </IOSGlassCircle>
+                <Text style={styles.searchEmptyTitle}>No memories found</Text>
+                <Text style={styles.searchEmptySubtitle}>
+                  No memories matched "{searchQuery}". Try keywords like "AI", "video", "chess", or "SEO".
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
 
         {/* ── Dual Action Buttons: Add Memory & Ask AI (both left-aligned with circular badge) ── */}
         <View style={styles.ctaRow}>
@@ -404,100 +584,104 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {/* ── Recent Memories Section ── */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recent Memories</Text>
-          <TouchableOpacity
-            style={styles.seeAllButton}
-            onPress={() => navigation.navigate("Search")}
-          >
-            <Text style={styles.seeAllText}>See all →</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.memoriesList}>
-          {activeMemories.slice(0, 3).map((item) => {
-            const isPinned = pinnedIds.includes(item.id);
-            return (
+        {/* ── Recent Memories Section (Shown when not actively searching) ── */}
+        {!isSearching && (
+          <>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Recent Memories</Text>
               <TouchableOpacity
-                key={item.id}
-                style={styles.memoryItem}
-                activeOpacity={0.8}
-                onPress={() =>
-                  navigation.navigate("MemoryDetail", {
-                    memoryId: item.id,
-                    initialData: item,
-                  })
-                }
+                style={styles.seeAllButton}
+                onPress={() => navigation.navigate("Search")}
               >
-                {/* Larger 60px Circular Icon with Specular Glass Rim & Pill Badge */}
-                <View style={styles.memoryIconBadgeCol}>
-                  <IOSGlassCircle size={60} strokeWidth={1.4} fill="rgba(26, 28, 33, 0.95)">
-                    <Icon
-                      name={item.icon}
-                      size={24}
-                      color="#FFFFFF"
-                      strokeWidth={item.icon === "link" ? 2.4 : 2}
-                    />
-                  </IOSGlassCircle>
-                  <View style={styles.timestampBadge}>
-                    <Text style={styles.timestampBadgeText} numberOfLines={1}>
-                      {item.timestamp}
-                    </Text>
-                  </View>
-                </View>
-
-                {/* Text Content - strictly bounded so it never overlaps or wraps under the icon */}
-                <View style={styles.memoryTextContent}>
-                  <View style={styles.memoryTitleRow}>
-                    <Text
-                      style={styles.memoryTitle}
-                      numberOfLines={1}
-                      ellipsizeMode="tail"
-                    >
-                      {item.title}
-                    </Text>
-                    {isPinned && (
-                      <View style={styles.pinnedBadge}>
-                        <Icon name="pin" size={10} color="#D4F82C" />
-                      </View>
-                    )}
-                  </View>
-                  {item.url ? (
-                    <View style={styles.memoryLinkRow}>
-                      <Text
-                        style={styles.memorySubtitle}
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
-                      >
-                        {item.subtitle}
-                      </Text>
-                      <Icon name="copy" size={12} color="#6B7280" />
-                    </View>
-                  ) : (
-                    <Text
-                      style={styles.memorySubtitle}
-                      numberOfLines={1}
-                      ellipsizeMode="tail"
-                    >
-                      {item.subtitle}
-                    </Text>
-                  )}
-                </View>
-
-                {/* 3-Dot Vertical White Menu Icon without background */}
-                <TouchableOpacity
-                  style={styles.moreMenuBtn}
-                  activeOpacity={0.6}
-                  hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
-                  onPress={() => handleMemoryMenu(item)}
-                >
-                  <Icon name="more-vertical" size={20} color="#FFFFFF" />
-                </TouchableOpacity>
+                <Text style={styles.seeAllText}>See all →</Text>
               </TouchableOpacity>
-            );
-          })}
-        </View>
+            </View>
+
+            <View style={styles.memoriesList}>
+              {activeMemories.slice(0, 3).map((item) => {
+                const isPinned = pinnedIds.includes(item.id);
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={styles.memoryItem}
+                    activeOpacity={0.8}
+                    onPress={() =>
+                      navigation.navigate("MemoryDetail", {
+                        memoryId: item.id,
+                        initialData: item,
+                      })
+                    }
+                  >
+                    {/* Larger 60px Circular Icon with Specular Glass Rim & Pill Badge */}
+                    <View style={styles.memoryIconBadgeCol}>
+                      <IOSGlassCircle size={60} strokeWidth={1.4} fill="rgba(26, 28, 33, 0.95)">
+                        <Icon
+                          name={item.icon}
+                          size={24}
+                          color="#FFFFFF"
+                          strokeWidth={item.icon === "link" ? 2.4 : 2}
+                        />
+                      </IOSGlassCircle>
+                      <View style={styles.timestampBadge}>
+                        <Text style={styles.timestampBadgeText} numberOfLines={1}>
+                          {item.timestamp}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Text Content - strictly bounded so it never overlaps or wraps under the icon */}
+                    <View style={styles.memoryTextContent}>
+                      <View style={styles.memoryTitleRow}>
+                        <Text
+                          style={styles.memoryTitle}
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                        >
+                          {item.title}
+                        </Text>
+                        {isPinned && (
+                          <View style={styles.pinnedBadge}>
+                            <Icon name="pin" size={10} color="#D4F82C" />
+                          </View>
+                        )}
+                      </View>
+                      {item.url ? (
+                        <View style={styles.memoryLinkRow}>
+                          <Text
+                            style={styles.memorySubtitle}
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                          >
+                            {item.subtitle}
+                          </Text>
+                          <Icon name="copy" size={12} color="#6B7280" />
+                        </View>
+                      ) : (
+                        <Text
+                          style={styles.memorySubtitle}
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                        >
+                          {item.subtitle}
+                        </Text>
+                      )}
+                    </View>
+
+                    {/* 3-Dot Vertical White Menu Icon without background */}
+                    <TouchableOpacity
+                      style={styles.moreMenuBtn}
+                      activeOpacity={0.6}
+                      hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
+                      onPress={() => handleMemoryMenu(item)}
+                    >
+                      <Icon name="more-vertical" size={20} color="#FFFFFF" />
+                    </TouchableOpacity>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </>
+        )}
 
         {/* ── Your Categories Section with exact Folder Background ── */}
         <View style={styles.sectionHeader}>
@@ -701,7 +885,62 @@ const styles = StyleSheet.create({
   searchBarContent: {
     paddingLeft: 16,
     paddingRight: 8,
+    flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
+  },
+  searchInput: {
+    flex: 1,
+    height: 48,
+    fontSize: 14,
+    color: "#FFFFFF",
+    marginLeft: 10,
+    paddingVertical: 0,
+  },
+  clearSearchBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  searchResultsSection: {
+    marginBottom: 24,
+  },
+  resultsCountBadge: {
+    backgroundColor: "rgba(212, 248, 44, 0.15)",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  resultsCountText: {
+    color: "#D4F82C",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  searchEmptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 28,
+    paddingHorizontal: 20,
+    backgroundColor: "rgba(18, 20, 25, 0.6)",
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.06)",
+  },
+  searchEmptyTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#FFFFFF",
+    marginTop: 12,
+    marginBottom: 6,
+  },
+  searchEmptySubtitle: {
+    fontSize: 13,
+    color: "#71717A",
+    textAlign: "center",
+    lineHeight: 18,
   },
   searchPlaceholder: {
     flex: 1,

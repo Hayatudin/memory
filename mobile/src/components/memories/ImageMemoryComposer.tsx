@@ -213,8 +213,14 @@ export const ImageMemoryComposer: React.FC<ImageMemoryComposerProps> = ({
 
   // Selected Category
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(() => {
-    if (initialMemory?.categoryId) {
+    if (initialMemory?.categoryId && categories.length > 0) {
       const found = categories.find((c) => c.id === initialMemory.categoryId);
+      if (found) return found;
+    }
+    if (initialMemory?.categoryName && categories.length > 0) {
+      const found = categories.find(
+        (c) => c.name.toLowerCase() === initialMemory.categoryName?.toLowerCase()
+      );
       if (found) return found;
     }
     return categories.length > 0 ? categories[0] : null;
@@ -238,11 +244,29 @@ export const ImageMemoryComposer: React.FC<ImageMemoryComposerProps> = ({
   }, [fetchCategories]);
 
   useEffect(() => {
-    if (!selectedCategory && categories.length > 0) {
-      const defaultMatch = categories.find((c) => c.name.toLowerCase() === "entertainment") || categories[0];
-      setSelectedCategory(defaultMatch);
+    if (categories.length > 0) {
+      if (initialMemory?.categoryId) {
+        const match = categories.find((c) => c.id === initialMemory.categoryId);
+        if (match) {
+          setSelectedCategory(match);
+          return;
+        }
+      }
+      if (initialMemory?.categoryName) {
+        const match = categories.find(
+          (c) => c.name.toLowerCase() === initialMemory.categoryName?.toLowerCase()
+        );
+        if (match) {
+          setSelectedCategory(match);
+          return;
+        }
+      }
+      if (!selectedCategory) {
+        const defaultMatch = categories.find((c) => c.name.toLowerCase() === "entertainment") || categories[0];
+        setSelectedCategory(defaultMatch);
+      }
     }
-  }, [categories, selectedCategory]);
+  }, [categories, initialMemory]);
 
   // ─── Undo ─────────────────────────────────────────────────────────────────
 

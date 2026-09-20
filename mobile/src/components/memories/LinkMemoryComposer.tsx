@@ -65,22 +65,46 @@ export const LinkMemoryComposer: React.FC<LinkMemoryComposerProps> = ({
   }, [fetchCategories]);
 
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(() => {
-    if (initialMemory?.categoryId) {
+    if (initialMemory?.categoryId && categories.length > 0) {
       const match = categories.find((c) => c.id === initialMemory.categoryId);
+      if (match) return match;
+    }
+    if (initialMemory?.categoryName && categories.length > 0) {
+      const match = categories.find(
+        (c) => c.name.toLowerCase() === initialMemory.categoryName?.toLowerCase()
+      );
       if (match) return match;
     }
     return categories.length > 0 ? categories[0] : null;
   });
 
   useEffect(() => {
-    if (!selectedCategory && categories.length > 0) {
-      const match =
-        categories.find((c) => c.name.toLowerCase().includes("tech")) ||
-        categories.find((c) => c.name.toLowerCase().includes("resource")) ||
-        categories[0];
-      setSelectedCategory(match);
+    if (categories.length > 0) {
+      if (initialMemory?.categoryId) {
+        const match = categories.find((c) => c.id === initialMemory.categoryId);
+        if (match) {
+          setSelectedCategory(match);
+          return;
+        }
+      }
+      if (initialMemory?.categoryName) {
+        const match = categories.find(
+          (c) => c.name.toLowerCase() === initialMemory.categoryName?.toLowerCase()
+        );
+        if (match) {
+          setSelectedCategory(match);
+          return;
+        }
+      }
+      if (!selectedCategory) {
+        const match =
+          categories.find((c) => c.name.toLowerCase().includes("tech")) ||
+          categories.find((c) => c.name.toLowerCase().includes("resource")) ||
+          categories[0];
+        setSelectedCategory(match);
+      }
     }
-  }, [categories, selectedCategory]);
+  }, [categories, initialMemory]);
 
   const [isSaving, setIsSaving] = useState(false);
   const [errorModalVisible, setErrorModalVisible] = useState(false);

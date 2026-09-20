@@ -22,8 +22,9 @@ import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
 import { MemoriesApi } from "../../api/memories.api";
 import { useMemoryStore } from "../../store/memoryStore";
-import { Memory } from "../../types/models";
+import { Memory, Category } from "../../types/models";
 import { Theme } from "../../theme/index";
+import { ChangeCategoryModal } from "../../components/memories/ChangeCategoryModal";
 import { Badge } from "../../components/common/Badge";
 import { Button } from "../../components/common/Button";
 import { IOSGlassButton } from "../../components/common/IOSGlassButton";
@@ -33,6 +34,8 @@ import {
   ImageMemoryComposer,
   generateAIImageInsights,
 } from "../../components/memories/ImageMemoryComposer";
+import { LinkMemoryComposer } from "../../components/memories/LinkMemoryComposer";
+import { VoiceMemoryComposer } from "../../components/memories/VoiceMemoryComposer";
 
 export const MemoryDetailScreen = ({ route, navigation }: any) => {
   const { memoryId, initialData } = route.params || {};
@@ -65,7 +68,15 @@ export const MemoryDetailScreen = ({ route, navigation }: any) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const { removeMemoryLocally, updateMemoryLocally, categories } = useMemoryStore();
+  const { removeMemoryLocally, updateMemoryLocally, updateMemory, categories } = useMemoryStore();
+  const storeMemory = useMemoryStore((state) => state.memories.find((m) => m.id === memoryId));
+  const [isChangeCategoryModalVisible, setIsChangeCategoryModalVisible] = useState(false);
+
+  useEffect(() => {
+    if (storeMemory) {
+      setMemory(storeMemory);
+    }
+  }, [storeMemory]);
 
   const fetchDetail = async () => {
     try {
@@ -210,6 +221,34 @@ export const MemoryDetailScreen = ({ route, navigation }: any) => {
     );
   };
 
+  const handleChangeCategory = async (category: Category) => {
+    if (!memory) return;
+    try {
+      const updated = await updateMemory(memory.id, { categoryId: category.id });
+      setMemory((prev) =>
+        prev
+          ? {
+              ...prev,
+              categoryId: category.id,
+              categoryName: category.name,
+              categoryIcon: category.icon,
+              categoryColor: category.color,
+            }
+          : updated
+      );
+      Alert.alert("Category Updated", `Moved "${memory.title}" to ${category.name}.`);
+    } catch (err: any) {
+      Alert.alert("Error", err?.message || "Failed to change category.");
+    } finally {
+      setIsChangeCategoryModalVisible(false);
+    }
+  };
+
+  const handleEdit = () => {
+    if (!memory) return;
+    setIsEditing(true);
+  };
+
   const handleMoreOptions = () => {
     if (Platform.OS === "ios") {
       ActionSheetIOS.showActionSheetWithOptions(
@@ -219,9 +258,11 @@ export const MemoryDetailScreen = ({ route, navigation }: any) => {
             "Cancel",
             memory?.isFavorite ? "Unfavorite" : "Favorite",
             "Share Memory",
+            "Edit Memory",
+            "Change Category",
             "Delete Memory",
           ],
-          destructiveButtonIndex: 3,
+          destructiveButtonIndex: 5,
           cancelButtonIndex: 0,
         },
         (buttonIndex) => {
@@ -230,6 +271,10 @@ export const MemoryDetailScreen = ({ route, navigation }: any) => {
           } else if (buttonIndex === 2) {
             handleShare();
           } else if (buttonIndex === 3) {
+            handleEdit();
+          } else if (buttonIndex === 4) {
+            setIsChangeCategoryModalVisible(true);
+          } else if (buttonIndex === 5) {
             handleDelete();
           }
         }
@@ -238,6 +283,8 @@ export const MemoryDetailScreen = ({ route, navigation }: any) => {
       Alert.alert("Memory Options", undefined, [
         { text: memory?.isFavorite ? "Unfavorite" : "Favorite", onPress: handleToggleFavorite },
         { text: "Share Memory", onPress: handleShare },
+        { text: "Edit Memory", onPress: handleEdit },
+        { text: "Change Category", onPress: () => setIsChangeCategoryModalVisible(true) },
         { text: "Delete", style: "destructive", onPress: handleDelete },
         { text: "Cancel", style: "cancel" },
       ]);
@@ -289,6 +336,40 @@ export const MemoryDetailScreen = ({ route, navigation }: any) => {
         <SafeAreaView style={styles.fullBlack}>
           <StatusBar barStyle="light-content" />
           <ImageMemoryComposer
+            initialMemory={memory}
+            onBack={() => setIsEditing(false)}
+            onSuccess={(updated) => {
+              setMemory(updated);
+              setIsEditing(false);
+              updateMemoryLocally(updated);
+            }}
+          />
+        </SafeAreaView>
+      );
+    }
+
+    if (memory.type === "link") {
+      return (
+        <SafeAreaView style={styles.fullBlack}>
+          <StatusBar barStyle="light-content" />
+          <LinkMemoryComposer
+            initialMemory={memory}
+            onBack={() => setIsEditing(false)}
+            onSuccess={(updated) => {
+              setMemory(updated);
+              setIsEditing(false);
+              updateMemoryLocally(updated);
+            }}
+          />
+        </SafeAreaView>
+      );
+    }
+
+    if (memory.type === "voice") {
+      return (
+        <SafeAreaView style={styles.fullBlack}>
+          <StatusBar barStyle="light-content" />
+          <VoiceMemoryComposer
             initialMemory={memory}
             onBack={() => setIsEditing(false)}
             onSuccess={(updated) => {
@@ -529,6 +610,15 @@ export const MemoryDetailScreen = ({ route, navigation }: any) => {
             </Text>
           </IOSGlassCapsule>
         </View>
+
+        {/* ── Change Category Sheet Modal ── */}
+        <ChangeCategoryModal
+          visible={isChangeCategoryModalVisible}
+          onClose={() => setIsChangeCategoryModalVisible(false)}
+          memoryTitle={memory.title}
+          currentCategoryId={memory.categoryId}
+          onSelectCategory={handleChangeCategory}
+        />
       </SafeAreaView>
     );
   }
@@ -870,6 +960,15 @@ export const MemoryDetailScreen = ({ route, navigation }: any) => {
             </TouchableWithoutFeedback>
           </View>
         </Modal>
+
+        {/* ── Change Category Sheet Modal ── */}
+        <ChangeCategoryModal
+          visible={isChangeCategoryModalVisible}
+          onClose={() => setIsChangeCategoryModalVisible(false)}
+          memoryTitle={memory.title}
+          currentCategoryId={memory.categoryId}
+          onSelectCategory={handleChangeCategory}
+        />
       </SafeAreaView>
     );
   }
@@ -944,6 +1043,15 @@ export const MemoryDetailScreen = ({ route, navigation }: any) => {
           onPress={handleDelete}
         />
       </View>
+
+      {/* ── Change Category Sheet Modal ── */}
+      <ChangeCategoryModal
+        visible={isChangeCategoryModalVisible}
+        onClose={() => setIsChangeCategoryModalVisible(false)}
+        memoryTitle={memory.title}
+        currentCategoryId={memory.categoryId}
+        onSelectCategory={handleChangeCategory}
+      />
     </ScrollView>
   );
 };

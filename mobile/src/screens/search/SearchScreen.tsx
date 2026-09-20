@@ -26,7 +26,7 @@ import { IOSGlassCapsule } from "../../components/common/IOSGlassCapsule";
 import { IOSGlassCircle } from "../../components/common/IOSGlassCircle";
 import { NotchedCategoryCard } from "../../components/common/NotchedCategoryCard";
 import { useMemoryStore } from "../../store/memoryStore";
-import { Category, Memory } from "../../types/models";
+import { Category, Memory, MemoryType } from "../../types/models";
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -45,6 +45,7 @@ interface MemoryItem {
   title: string;
   subtitle: string;
   category: string;
+  categoryId?: string;
   timestamp: string;
   type: "link" | "text" | "image" | "voice" | "document";
   typeLabel: string;
@@ -409,6 +410,7 @@ export const SearchScreen: React.FC<{ navigation?: any }> = ({ navigation }) => 
         title: mem.title || "Untitled Memory",
         subtitle: mem.content || mem.sourceUrl || "",
         category: categoryName,
+        categoryId: mem.categoryId || undefined,
         timestamp,
         type: (mem.type as any) || "text",
         typeLabel,
@@ -473,7 +475,24 @@ export const SearchScreen: React.FC<{ navigation?: any }> = ({ navigation }) => 
   };
 
   const handleEdit = (memory: MemoryItem) => {
-    Alert.alert("Edit Memory", `Edit details for "${memory.title}"`);
+    const fullMemory: Memory = storeMemories.find((m: Memory) => m.id === memory.id) || ({
+      id: memory.id,
+      title: memory.title,
+      content: memory.subtitle,
+      type: (memory.type as MemoryType) || (memory.url ? "link" : "text"),
+      sourceUrl: memory.url,
+      categoryId: memory.categoryId,
+      categoryName: memory.category,
+      isFavorite: false,
+      isArchived: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    } as Memory);
+
+    navigation.navigate("AddMemoryModal", {
+      initialMemory: fullMemory,
+      initialType: fullMemory.type,
+    });
   };
 
   const confirmDelete = (id: string) => {
